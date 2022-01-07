@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { useNavigate } from 'react-router';
 import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -27,6 +28,7 @@ function Copyright(props: any) {
 }
 
 export default function SignIn() {
+  const navigate = useNavigate();
   const [remember, setRemember] = React.useState(false);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
@@ -35,13 +37,14 @@ export default function SignIn() {
     const data = new FormData(event.currentTarget);
     const factory = new HTTPRequestFactory();
 
-    const response = await factory.post('/api/@me', {
+    const response = await factory.post<{ token: string }>('/api/@me', {
       email: data.get('email'),
       password: data.get('password'),
       remember: remember,
     });
 
-    console.log(response);
+    localStorage.setItem('token', response.data.token);
+    navigate('/');
   };
 
   const rememberMe = (event: React.ChangeEvent<HTMLInputElement>, checked: boolean) => {
@@ -106,7 +109,7 @@ export default function SignIn() {
               </Link>
             </Grid>
             <Grid item>
-              <Link href="#" variant="body2">
+              <Link href="/signup" variant="body2">
                 {"Don't have an account? Sign Up"}
               </Link>
             </Grid>

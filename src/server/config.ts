@@ -16,5 +16,6 @@ const SERVER_PORT = process.env.PORT || 3000;
 const WEBPACK_PORT = 8085;
 
 const JWT_SECRET = process.env['JWT_SECRET'];
+const DB_PATH = path.join(process.cwd(), process.env['DB_PATH']);
 
-export { IS_DEV, VERSION, SERVER_PORT, WEBPACK_PORT, JWT_SECRET };
+export { IS_DEV, VERSION, SERVER_PORT, WEBPACK_PORT, JWT_SECRET, DB_PATH };

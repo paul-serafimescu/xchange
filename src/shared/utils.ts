@@ -1,34 +1,34 @@
 import IUserDTO from './IUser';
-import axios from 'axios';
+import axios, { AxiosResponse } from 'axios';
 
 export class HTTPRequestFactory {
-    async get<T>(url: string): Promise<T> {
+    async get<T>(url: string): Promise<AxiosResponse<T>> {
         try {
-            return (await axios.get<T>(url)).data;
+            return await axios.get<T>(url);
         } catch (error) {
             console.error(error);
         }
     }
 
-    async post<T>(url: string, data?: any): Promise<T> {
+    async post<T>(url: string, data?: any): Promise<AxiosResponse<T>> {
         try {
-            return (await axios.post<T>(url, data)).data;
+            return await axios.post<T>(url, data);
         } catch (error) {
             console.error(error);
         }
     }
 
-    async patch<T>(url: string, data?: any): Promise<T> {
+    async patch<T>(url: string, data?: any): Promise<AxiosResponse<T>> {
         try {
-            return (await axios.patch<T>(url, data)).data;
+            return await axios.patch<T>(url, data);
         } catch (error) {
             console.error(error);
         }
     }
 
-    async delete<T>(url: string, data?: any): Promise<T> {
+    async delete<T>(url: string, data?: any): Promise<AxiosResponse<T>> {
         try {
-            return (await axios.patch(url, data)).data;
+            return await axios.patch(url, data);
         } catch (error) {
             console.error(error);
         }
@@ -55,7 +55,5 @@ export class Schema {
         return true;
     }
 }
-
-export function useToken() {}
 
 export const getUserFullName = (user: IUserDTO): string => `${user.firstName} ${user.lastName}`;
