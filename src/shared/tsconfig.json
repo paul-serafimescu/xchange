@@ -11,7 +11,8 @@
     "isolatedModules": true,
     "outDir": "../../dist/shared",
     "lib": ["ES2019"],
-    "composite": true
+    "composite": true,
+    "experimentalDecorators": true
   },
   "include": ["./**/*.ts"],
   "exclude": ["./**/*.test.ts"],

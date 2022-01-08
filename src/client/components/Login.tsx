@@ -30,6 +30,7 @@ function Copyright(props: any) {
 export default function SignIn() {
   const navigate = useNavigate();
   const [remember, setRemember] = React.useState(false);
+  const [error, setError] = React.useState('');
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -37,14 +38,29 @@ export default function SignIn() {
     const data = new FormData(event.currentTarget);
     const factory = new HTTPRequestFactory();
 
-    const response = await factory.post<{ token: string }>('/api/@me', {
+    const response = await factory.post<{ token: string, message: string, remember: boolean }>('/api/@me', {
       email: data.get('email'),
       password: data.get('password'),
       remember: remember,
     });
 
-    localStorage.setItem('token', response.data.token);
-    navigate('/');
+    switch (response.status) {
+      case 200:
+        if (response.data.remember) {
+          localStorage.setItem('token', response.data.token);
+          sessionStorage.removeItem('token');
+        } else {
+          sessionStorage.setItem('token', response.data.token);
+          localStorage.removeItem('token');
+        }
+        navigate('/');
+        break;
+      case 400:
+        setError(response.data.message);
+        break;
+      default:
+        break;
+    }
   };
 
   const rememberMe = (event: React.ChangeEvent<HTMLInputElement>, checked: boolean) => {
@@ -79,6 +95,7 @@ export default function SignIn() {
             name="email"
             autoComplete="email"
             autoFocus
+            error={Boolean(error)}
           />
           <TextField
             margin="normal"
@@ -89,6 +106,8 @@ export default function SignIn() {
             type="password"
             id="password"
             autoComplete="current-password"
+            error={Boolean(error)}
+            helperText={error}
           />
           <FormControlLabel
             control={<Checkbox value="remember" color="primary" onChange={rememberMe} />}

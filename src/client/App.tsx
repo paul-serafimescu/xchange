@@ -6,6 +6,7 @@ import { Header } from './components/Header';
 import Home from './components/Home';
 import RouterTest from './components/RouterTest';
 import LoginPage from './components/Login';
+import LogoutPage from './components/Logout';
 import SideMenu from './components/SideMenu';
 import SignupPage from './components/Signup';
 
@@ -14,6 +15,7 @@ export const AppRoutes: React.FC = () => (
     <Route path='/' element={<Home />} />
     <Route path='/signup' element={<SignupPage />} />
     <Route path='/login' element={<LoginPage />} />
+    <Route path='/logout' element={<LogoutPage />} />
     <Route path='/router-example/:slug' element={<RouterTest />} />
   </Routes>
 );
