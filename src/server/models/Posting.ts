@@ -1,6 +1,14 @@
 import db from '../db';
 import User from './User';
 
+export interface IPostingRow {
+    readonly posting_id: number;
+    readonly author: number;
+    readonly posting_date: string;
+    readonly title: string;
+    readonly description: string;
+}
+
 export interface IPosting {
     readonly posting_id?: number;
     readonly author: User;
@@ -28,7 +36,7 @@ export class Posting {
 
     public postingId?: number;
     public author: User;
-    public postingDate?: Date;
+    public posting_date?: Date;
     public title: string;
     public description: string;
     private saved: boolean;
@@ -45,20 +53,47 @@ export class Posting {
         this.author = author;
         this.title = title;
         this.description = description;
-        this.postingDate = postingDate;
+        this.posting_date = postingDate;
         this.saved = Boolean(postingId);
     }
 
+    static build = async (id: number) => new Promise<Posting>((resolve, reject) => {
+        db.get(`SELECT * FROM ${Posting.tableName}
+                WHERE posting_id = ?`, id, async function (error: Error, row: IPostingRow) {
+                    if (error) {
+                        reject(error);
+                    } else {
+                        try {
+                            console.log(row);
+                            const user = await User.build(row.author);
+                            resolve(new Posting(user, row.title, row.description, row.posting_id, new Date(row.posting_date)));
+                        } catch (error) {
+                            reject(error);
+                        }
+                    }
+        });
+    });
+
+    static delete = async (id: number) => new Promise<void>((resolve, reject) => {
+        db.run(`DELETE FROM ${Posting.tableName} WHERE posting_id = ?`, id, function (error) {
+            if (error) {
+                reject(error);
+            } else {
+                resolve();
+            }
+        });
+    });
+
     async save(): Promise<Posting> {
-        this.postingDate = new Date();
+        this.posting_date = new Date();
         if (this.saved) {
             this.db.run(`UPDATE ${Posting.tableName}
                          SET author = ?, title = ?, description = ?, posting_date = ?
-                         WHERE posting_id = ?`, this.author.user_id, this.title, this.description, this.postingDate.toISOString(), this.postingId);
+                         WHERE posting_id = ?`, this.author.user_id, this.title, this.description, this.posting_date.toISOString(), this.postingId);
         } else {
             this.postingId = await new Promise<number>((resolve, reject) =>
                 this.db.run(`INSERT INTO ${Posting.tableName} (author, title, description, posting_date)
-                             VALUES (?, ?, ?, ?)`, this.author.user_id, this.title, this.description, this.postingDate.toISOString(),
+                             VALUES (?, ?, ?, ?)`, this.author.user_id, this.title, this.description, this.posting_date.toISOString(),
                     function (error: Error) {
                         if (error) {
                             reject(error);

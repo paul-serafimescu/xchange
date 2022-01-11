@@ -45,7 +45,7 @@ export const App: React.FC = () => {
 
   React.useMemo(() => setTheme(generateTheme(preferDark)), [preferDark]);
 
-  document.body.style.backgroundColor = theme.palette.mode === 'dark' ? '#121212' : '#ffffff';
+  document.body.style.backgroundColor = theme.palette.mode === 'dark' ? '#121212' : '#efefef';
 
   return (
     <React.Fragment>

@@ -8,7 +8,7 @@ import {
   Posting, IPosting
 } from '../models';
 
-export function useToken<T>(request: Request<{}, {}, T>): string[] {
+export function useToken(request: Request): string[] {
   const authorization = request.headers.authorization;
   if (!authorization) {
     throw new Error('invalid authorization');
@@ -84,7 +84,7 @@ export function apiRouter() {
 
       try {
         const postings = await user.fetchPostings();
-        res.send({ postings: postings });
+        res.send(postings);
       } catch (error) {
         console.error(error);
         res.status(500).send({ message: 'internal server error' });
@@ -107,7 +107,6 @@ export function apiRouter() {
       if (schema.validate(req.body)) {
         try {
           const posting = await new Posting(user, req.body.title, req.body.description).save();
-          console.log(posting);
           res.status(200).send({ message: 'ok' });
         } catch (error) {
           console.error(error);
@@ -117,9 +116,32 @@ export function apiRouter() {
         res.status(400).send({ message: 'invalid data format' });
       }
     } catch (error) {
-
+      console.error(error);
+      res.status(400).send({ message: 'invalid token' });
     }
   });
+
+  router.delete('/api/postings/:postingId', async (req: Request<{ postingId: string }>, res) => {
+    try {
+      const _ = useToken(req);
+      const id = Number(req.params.postingId);
+
+      if (isNaN(id)) {
+        res.status(404).send({ message: 'resource not found' });
+      } else {
+        try {
+          await Posting.delete(id);
+        } catch (error) {
+          console.error(error);
+          res.status(404).send({ message: 'resource not found' });
+        }
+        res.status(200).send({ message: 'ok' });
+      }
+    } catch (error) {
+      console.error(error);
+      res.status(400).send({ message: 'invalid token' });
+    }
+  })
 
   return router;
 }

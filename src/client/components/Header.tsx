@@ -3,6 +3,7 @@ import type { Theme } from '@mui/material/styles';
 import MenuIcon from '@mui/icons-material/Menu';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
 import LightModeIcon from '@mui/icons-material/LightMode';
+import ShoppingIcon from '@mui/icons-material/ShoppingCart';
 import * as React from 'react';
 
 export interface HeaderProps {
@@ -30,8 +31,12 @@ export const Header: React.FC<HeaderProps> = ({currentTheme, setTheme, generateT
         >
           Luna
         </Typography>
-        <Switch color='info' checked={currentTheme === 'dark'} onClick={handleClick} />
         {currentTheme === 'dark' ? <DarkModeIcon htmlColor='yellow' /> : <LightModeIcon htmlColor='yellow' />}
+        <Switch color='info' checked={currentTheme === 'dark'} onClick={handleClick} />
+        <Typography marginLeft={2}>
+          <ShoppingIcon />
+          Your Cart
+        </Typography>
       </Toolbar>
     </AppBar>
   );

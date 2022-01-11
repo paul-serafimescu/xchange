@@ -2,13 +2,15 @@ import db from '../db';
 import md5 from 'md5';
 import Posting from './Posting';
 
-export interface IUser {
+export interface IUserRow {
     readonly user_id?: number;
     readonly firstName: string;
     readonly lastName: string;
     readonly email: string;
     readonly password?: string;
 }
+
+export interface IUser extends IUserRow {};
 
 export function createUser(obj: IUser): User {
     return new User(obj.firstName, obj.lastName, obj.email, obj.password, obj.user_id);
@@ -63,6 +65,16 @@ export class User {
                 }
             }));
     }
+
+    static build = async (id: number) => new Promise<User>((resolve, reject) =>
+        db.get(`SELECT * FROM ${User.tableName}
+                WHERE user_id = ?`, id, function (error: Error, row: IUser) {
+                    if (error) {
+                        reject(error);
+                    } else {
+                        resolve(new User(row.firstName, row.lastName, row.email, row.password, row.user_id));
+                    }
+                }));
 
     async fetchPostings(): Promise<Posting[]> {
         if (!this.saved) {

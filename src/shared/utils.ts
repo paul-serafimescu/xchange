@@ -45,7 +45,7 @@ export class HTTPRequestFactory {
 
     async delete<T>(url: string, data?: any): Promise<AxiosResponse<T>> {
         try {
-            return await this.instance.patch(url, data);
+            return await this.instance.delete(url, data);
         } catch (error) {
             console.error(error);
             return error.response;

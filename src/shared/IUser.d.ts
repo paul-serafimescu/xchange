@@ -1,6 +1,7 @@
-declare export default interface IUserDTO {
-  userId: number;
-  firstName: string;
-  lastName: string;
-  imageUrl: string;
+declare export default interface IUser {
+  readonly user_id?: number;
+  readonly firstName: string;
+  readonly lastName: string;
+  readonly email: string;
+  readonly password?: string;
 }
