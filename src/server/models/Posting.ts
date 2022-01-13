@@ -57,15 +57,14 @@ export class Posting {
         this.saved = Boolean(postingId);
     }
 
-    static build = async (id: number) => new Promise<Posting>((resolve, reject) => {
+    static build = async (id: number, withAuthor = false) => new Promise<Posting>((resolve, reject) => {
         db.get(`SELECT * FROM ${Posting.tableName}
                 WHERE posting_id = ?`, id, async function (error: Error, row: IPostingRow) {
                     if (error) {
                         reject(error);
                     } else {
                         try {
-                            console.log(row);
-                            const user = await User.build(row.author);
+                            const user = withAuthor ? await User.build(row.author) : undefined;
                             resolve(new Posting(user, row.title, row.description, row.posting_id, new Date(row.posting_date)));
                         } catch (error) {
                             reject(error);
@@ -84,7 +83,7 @@ export class Posting {
         });
     });
 
-    async save(): Promise<Posting> {
+    save = async (): Promise<Posting> => {
         this.posting_date = new Date();
         if (this.saved) {
             this.db.run(`UPDATE ${Posting.tableName}

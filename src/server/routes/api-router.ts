@@ -107,7 +107,7 @@ export function apiRouter() {
       if (schema.validate(req.body)) {
         try {
           const posting = await new Posting(user, req.body.title, req.body.description).save();
-          res.status(200).send({ message: 'ok' });
+          res.status(200).send({ id: posting.postingId });
         } catch (error) {
           console.error(error);
           res.status(500).send({ message: 'internal server error' });

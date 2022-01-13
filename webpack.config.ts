@@ -71,27 +71,8 @@ const config: Configuration = {
         },
       },
       {
-        test: /\.css$/,
-        use: [
-          {
-            loader: 'style-loader',
-          },
-          {
-            loader: 'css-loader',
-            options: {
-              modules: true,
-              localsConvention: 'camelCase',
-              sourceMap: IS_DEV,
-            },
-          },
-          {
-            loader: 'postcss-loader',
-            options: {
-              sourceMap: IS_DEV,
-              plugins: IS_DEV ? [cssnano()] : [],
-            },
-          },
-        ],
+        test: /\.(s(a|c)ss)$/,
+        use: ['style-loader','css-loader', 'sass-loader']
       },
       {
         test: /.jpe?g$|.gif$|.png$|.svg$|.woff$|.woff2$|.ttf$|.eot$/,

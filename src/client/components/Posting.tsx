@@ -9,7 +9,9 @@ import IPosting from '../../shared/IPosting';
 import { HTTPRequestFactory } from '../../shared/utils';
 import { useToken } from '../utils';
 
-interface IProps extends IPosting {
+import './css/Posting.scss';
+
+export interface IProps extends IPosting {
     removePosting: (id: number) => void;
 }
 
@@ -41,9 +43,8 @@ const Posting: React.FC<IProps> = ({ posting_id, posting_date, title, descriptio
 
     const onPositive: React.MouseEventHandler<HTMLButtonElement> = async (event) => {
         event.preventDefault();
-
-        await deletePosting();
         setOpen(false);
+        await deletePosting();
     };
 
     const alertTitle = "Confirm";
@@ -52,7 +53,7 @@ const Posting: React.FC<IProps> = ({ posting_id, posting_date, title, descriptio
     </React.Fragment>;
 
     return (
-        <Card variant='outlined'>
+        <Card className="posting-card" variant='outlined'>
             <ConfirmationAlert open={openDialog} onNegative={onNegative} onPositive={onPositive} title={alertTitle} body={alertBody} />
             <CardContent>
                 <Typography gutterBottom variant="h5" component="div">
