@@ -2,11 +2,27 @@ import bodyParser from 'body-parser';
 import { Router, Request } from 'express';
 import * as jwt from 'jsonwebtoken';
 import * as config from '../config';
-import { Schema } from '../../shared/utils';
+import * as path from 'path';
+import { v4 as uuid } from 'uuid';
+import multer from 'multer';
+import { Validation } from '../../shared/utils';
 import {
   User, IUser, createUser,
   Posting, IPosting
 } from '../models';
+
+const { Schema } = Validation;
+
+const storage = multer.diskStorage({
+  destination: path.join(process.cwd(), 'uploads'),
+  filename: function (_, file, callback) {
+    const split_filename = file.originalname.split(/\./);
+    const extension = split_filename[split_filename.length - 1]; // TODO: handle based on mimetype
+    callback(null, `${uuid()}.${extension}`);
+  }
+});
+
+const upload = multer({ storage: storage });
 
 export function useToken(request: Request): string[] {
   const authorization = request.headers.authorization;
@@ -95,13 +111,13 @@ export function apiRouter() {
     }
   });
 
-  router.post('/api/postings/', async (req: Request<{}, {}, IPosting>, res) => {
+  router.post('/api/postings/', upload.single('image'), async (req: Request<{}, {}, IPosting>, res) => {
     try {
       const [_, token] = useToken(req);
       const user = createUser(<User>jwt.verify(token, config.JWT_SECRET));
       const schema = new Schema({
         title: 'string',
-        description: 'string'
+        description: 'string',
       });
 
       if (schema.validate(req.body)) {

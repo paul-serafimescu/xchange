@@ -1,4 +1,3 @@
-import IUserDTO from './IUser';
 import axios, { Axios, AxiosResponse } from 'axios';
 
 export interface IRFOptions {
@@ -53,25 +52,54 @@ export class HTTPRequestFactory {
     }
 }
 
-interface ISchema {
-    [key: string]: 'number' | 'string' | 'boolean' | 'undefined' | 'bigint' | 'object' | 'function';
-}
-
-export class Schema {
-    private schema: ISchema;
-
-    constructor(schema: ISchema) {
-        this.schema = schema;
+export namespace Validation {
+    export abstract class Verifiable {
+        public abstract verify(other: any): boolean;
     }
 
-    validate(obj: object): boolean {
-        Object.entries(this.schema).forEach(([key, value]) => {
-            if (obj[key] !== null && typeof obj[key] !== value) {
-                return false;
+    export class IEnum extends Verifiable {
+        private values: string[];
+
+        constructor(values: string[]) {
+            super();
+            this.values = values;
+        }
+
+        public verify(other: string): boolean {
+            for (const symbol of this.values) {
+                if (symbol === other) {
+                    return true;
+                }
             }
-        });
-        return true;
+            return false;
+        }
     }
-}
 
-export const getUserFullName = (user: IUserDTO): string => `${user.firstName} ${user.lastName}`;
+    export type ISchemaPrimitives = 'number' | 'string' | 'boolean' | 'undefined' | 'bigint' | 'object' | 'function';
+
+    export interface ISchema {
+        [key: string]: Verifiable | & ISchemaPrimitives | 'any';
+    };
+    
+    export class Schema {
+        private schema: ISchema;
+    
+        constructor(schema: ISchema) {
+            this.schema = schema;
+        }
+    
+        validate(obj: object): boolean {
+            var flag = true;
+            Object.entries(this.schema).forEach(([key, value]) => {
+                if (value === 'any') {
+                    // do nothing
+                } else if (value instanceof Verifiable) {
+                    flag = value.verify(obj[key]);
+                } else if (obj[key] !== null && typeof obj[key] !== value) {
+                    flag = false;
+                }
+            });
+            return flag;
+        }
+    }
+};

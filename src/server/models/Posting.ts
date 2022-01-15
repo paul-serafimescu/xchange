@@ -15,6 +15,22 @@ export interface IPosting {
     readonly postingDate?: Date;
     readonly title: string;
     readonly description: string;
+    readonly image?: any;
+}
+
+/**
+ * TODO: Image Field and Currency
+ * idea: namespace/enum merging
+ */
+
+export enum Currency {
+    DOLLAR, SHEKEL, PESO
+}
+
+export namespace Currency {
+    export function toString(c: Currency): string {
+        return Currency[c];
+    }
 }
 
 export class Posting {
