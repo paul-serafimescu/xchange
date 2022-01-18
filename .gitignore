@@ -7,4 +7,5 @@ db.sqlite3
 
 # development stuff
 migrations.sql
-uploads/
+assets/uploads/*
+!assets/uploads/default-placeholder.png

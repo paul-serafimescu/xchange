@@ -17,28 +17,36 @@ function renderModal(
   creating: boolean,
   handleModalClose: (...args: any[]) => void,
   modalStyle: any,
-  createPosting: (title: string, description: string, image: File) => Promise<void>) {
+  createPosting: (title: string, description: string, price: number, image: File) => Promise<void>) {
 
     type ButtonEventHandler = React.MouseEventHandler<HTMLButtonElement>;
 
     const [title, setTitle] = React.useState('');
     const [description, setDescription] = React.useState('');
+    const [price, setPrice] = React.useState('');
     const [image, loadImage] = React.useState<File>(null);
 
     type ChangeEventHandler = React.ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement>;
 
     const handleTitleChange: ChangeEventHandler = event => setTitle(event.target.value);
     const handleDescriptionChange: ChangeEventHandler = event => setDescription(event.target.value);
+    const handlePriceChange: ChangeEventHandler = event => {
+      const newDigit = event.target.value;
+      if (!isNaN(Number(event.target.value))) {
+        setPrice(newDigit);
+      }
+    }
 
     const reset = () => {
       setTitle('');
       setDescription('');
+      setPrice('');
       loadImage(null);
     };
 
     const handleModalSubmit: ButtonEventHandler = async event => {
       event.preventDefault();
-      await createPosting(title, description, image);
+      await createPosting(title, description, Number(price), image);
       handleModalClose();
       reset();
     };
@@ -77,6 +85,7 @@ function renderModal(
             <Box padding={1}>
               <TextField required label="title" onChange={handleTitleChange} value={title} />
               <TextField required label="description" onChange={handleDescriptionChange} value={description} />
+              <TextField required label="price" onChange={handlePriceChange} value={price} />
               {image && (
                 <div>
                   <img alt="not found" src={URL.createObjectURL(image)} />
@@ -84,7 +93,7 @@ function renderModal(
               )}
               <Button variant="contained" component="label">
                 Upload Image
-                <input required type="file" accept="image/*" name="image" hidden onChange={handleUpload} />
+                <input type="file" accept="image/*" name="image" hidden onChange={handleUpload} />
               </Button>
             </Box>
             <Button onClick={handleModalSubmit}>
@@ -118,16 +127,20 @@ export const LoggedInView: React.FC = () => {
 
   const handleModalClose = (...args: any[]) => setCreationDialog(false);
 
-  const createPosting = async (title: string, description: string, image: File) => {
+  const createPosting = async (title: string, description: string, price: number, image: File) => {
     const factory = new HTTPRequestFactory({ authorizationToken: useToken() });
     const formData = new FormData();
 
-    formData.append('image', image, image.name);
+    if (image) {
+      formData.append('image', image, image.name);
+    }
     formData.append('title', title);
     formData.append('description', description);
+    formData.append('price', String(price));
+    formData.append('currency', 'USD');
 
     try {
-      const response = await factory.post<{ id: number }>('api/postings', formData);
+      const response = await factory.post<{ id: number, image: string }>('api/postings', formData);
       
       switch (response.status) {
         case 200:
@@ -137,6 +150,7 @@ export const LoggedInView: React.FC = () => {
             author: undefined,
             posting_date: new Date(),
             posting_id: response.data.id,
+            image: response.data.image,
           });
           break;
         default:

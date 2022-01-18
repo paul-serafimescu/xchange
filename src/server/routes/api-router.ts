@@ -8,17 +8,29 @@ import multer from 'multer';
 import { Validation } from '../../shared/utils';
 import {
   User, IUser, createUser,
-  Posting, IPosting
+  Posting, IPosting, Currency
 } from '../models';
 
 const { Schema } = Validation;
 
 const storage = multer.diskStorage({
-  destination: path.join(process.cwd(), 'uploads'),
+  destination: path.join(process.cwd(), 'assets', 'uploads'),
   filename: function (_, file, callback) {
-    const split_filename = file.originalname.split(/\./);
-    const extension = split_filename[split_filename.length - 1]; // TODO: handle based on mimetype
-    callback(null, `${uuid()}.${extension}`);
+    let extension = '.';
+    switch (file.mimetype) {
+      case 'image/png':
+        extension += 'png';
+        break;
+      case 'image/gif':
+        extension += 'gif';
+        break;
+      case 'image/jpeg':
+        extension += 'jpg';
+        break;
+      default:
+        return callback(new Error('invalid image'), null);
+    }
+    return callback(null, uuid() + extension);
   }
 });
 
@@ -118,12 +130,15 @@ export function apiRouter() {
       const schema = new Schema({
         title: 'string',
         description: 'string',
+        currency: 'string',
+        price: 'string',
       });
 
       if (schema.validate(req.body)) {
         try {
-          const posting = await new Posting(user, req.body.title, req.body.description).save();
-          res.status(200).send({ id: posting.postingId });
+          const filename = req.file ? req.file.filename : 'default-placeholder.png';
+          const posting = await new Posting(user, req.body.title, req.body.description, req.body.price, 'USD', undefined, undefined, filename).save();
+          res.status(200).send({ id: posting.postingId, image: filename });
         } catch (error) {
           console.error(error);
           res.status(500).send({ message: 'internal server error' });

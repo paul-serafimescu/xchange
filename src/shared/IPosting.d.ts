@@ -6,5 +6,5 @@ declare export default interface IPosting {
     readonly posting_date?: Date;
     readonly title: string;
     readonly description: string;
-    readonly image?: any;
+    readonly image?: string;
 }

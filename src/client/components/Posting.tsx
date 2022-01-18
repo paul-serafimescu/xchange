@@ -2,6 +2,7 @@ import * as React from 'react';
 import Card from '@mui/material/Card';
 import CardActions from '@mui/material/CardActions';
 import CardContent from '@mui/material/CardContent';
+import CardMedia from '@mui/material/CardMedia';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import ConfirmationAlert from './ConfirmationAlert';
@@ -15,7 +16,7 @@ export interface IProps extends IPosting {
     removePosting: (id: number) => void;
 }
 
-const Posting: React.FC<IProps> = ({ posting_id, posting_date, title, description, removePosting }) => {
+const Posting: React.FC<IProps> = ({ posting_id, posting_date, title, description, image, removePosting }) => {
     const token = useToken();
     const [openDialog, setOpen] = React.useState(false);
 
@@ -55,6 +56,7 @@ const Posting: React.FC<IProps> = ({ posting_id, posting_date, title, descriptio
     return (
         <Card className="posting-card" variant='outlined'>
             <ConfirmationAlert open={openDialog} onNegative={onNegative} onPositive={onPositive} title={alertTitle} body={alertBody} />
+            <CardMedia component="img" image={`/assets/uploads/${image}`} style={{ maxWidth: 200 }} />
             <CardContent>
                 <Typography gutterBottom variant="h5" component="div">
                     {title}

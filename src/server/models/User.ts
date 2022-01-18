@@ -1,4 +1,4 @@
-import db from '../db';
+import db, { IBuilder } from '../db';
 import md5 from 'md5';
 import Posting from './Posting';
 
@@ -48,6 +48,23 @@ export class User {
         this.password = md5(password);
         this.saved = Boolean(user_id);
     }
+
+    public static builder = new class implements IBuilder {
+        public buildTable = () => new Promise<void>((resolve, reject) => {
+            db.run(`CREATE TABLE IF NOT EXISTS Users
+                                (user_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                firstName TEXT,
+                                lastName TEXT,
+                                email TEXT,
+                                password TEXT)`, function (err) {
+                                    if (err) {
+                                        reject(err);
+                                    } else {
+                                        resolve();
+                                    }
+                                });
+        });
+    }();
 
     static async login(email: string, password: string): Promise<User> {
         return new Promise((resolve, reject) => db.get(`SELECT * FROM Users

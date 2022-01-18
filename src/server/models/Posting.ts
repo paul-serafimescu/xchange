@@ -1,4 +1,4 @@
-import db from '../db';
+import db, { IBuilder } from '../db';
 import User from './User';
 
 export interface IPostingRow {
@@ -7,6 +7,9 @@ export interface IPostingRow {
     readonly posting_date: string;
     readonly title: string;
     readonly description: string;
+    readonly image?: string;
+    readonly price: number;
+    readonly currency: Currency.Code;
 }
 
 export interface IPosting {
@@ -15,7 +18,9 @@ export interface IPosting {
     readonly postingDate?: Date;
     readonly title: string;
     readonly description: string;
-    readonly image?: any;
+    readonly image?: string;
+    readonly price: number;
+    readonly currency: Currency;
 }
 
 /**
@@ -23,13 +28,29 @@ export interface IPosting {
  * idea: namespace/enum merging
  */
 
+/**
+ * numeric enum representation of currency
+ */
 export enum Currency {
-    DOLLAR, SHEKEL, PESO
+    USD, ILS, MXN, UNKNOWN
 }
 
 export namespace Currency {
+    export const Translation = {
+        USD: Currency.USD,
+        ILS: Currency.ILS,
+        MXN: Currency.MXN,
+    };
+
+    export type Code = keyof typeof Translation;
+
     export function toString(c: Currency): string {
+        console.log("stringified:", Currency[c]);
         return Currency[c];
+    }
+
+    export function from(str: string): Currency {
+        return Translation[str] ?? Currency.UNKNOWN;
     }
 }
 
@@ -42,6 +63,7 @@ export class Posting {
      *      posting_date TEXT
      *      title TEXT
      *      description TEXT
+     *      image TEXT
      *      FOREIGN KEY(author) REFERENCES Users(user_id)
      * }
      */
@@ -55,7 +77,31 @@ export class Posting {
     public posting_date?: Date;
     public title: string;
     public description: string;
+    public image?: string;
+    public price: number;
+    public currency: Currency;
     private saved: boolean;
+
+    public static builder = new class implements IBuilder {
+        public buildTable = () => new Promise<void>((resolve, reject) => {
+            db.run(`CREATE TABLE IF NOT EXISTS Postings
+                                (posting_id INTEGER PRIMARY KEY AUTOINCREMENT,
+                                author INTEGER,
+                                posting_date TEXT,
+                                title TEXT,
+                                description TEXT,
+                                image TEXT NOT NULL,
+                                price REAL NOT NULL,
+                                currency VARCHAR(3),
+                                FOREIGN KEY(author) REFERENCES Users(user_id))`, function (err) {
+                                    if (err) {
+                                        reject(err);
+                                    } else {
+                                        resolve();
+                                    }
+                                });
+        });
+    }();
 
     /**
      * @param author must be saved in the database (i.e. has a user_id)
@@ -63,14 +109,20 @@ export class Posting {
      * @param description posting description
      * @param postingId if already created, the posting id
      * @param postingDate date posted (if already saved)
+     * @param image posting image
+     * @param price posting price
+     * @param currency posting currency code
      */
-    constructor(author: User, title: string, description: string, postingId?: number, postingDate?: Date) {
+    constructor(author: User, title: string, description: string, price: number, currency: Currency.Code, postingId?: number, postingDate?: Date, image?: string) {
         this.postingId = postingId;
         this.author = author;
         this.title = title;
         this.description = description;
         this.posting_date = postingDate;
+        this.image = image ?? null;
         this.saved = Boolean(postingId);
+        this.price = price;
+        this.currency = Currency.from(currency);
     }
 
     static build = async (id: number, withAuthor = false) => new Promise<Posting>((resolve, reject) => {
@@ -81,7 +133,7 @@ export class Posting {
                     } else {
                         try {
                             const user = withAuthor ? await User.build(row.author) : undefined;
-                            resolve(new Posting(user, row.title, row.description, row.posting_id, new Date(row.posting_date)));
+                            resolve(new Posting(user, row.title, row.description, row.price, row.currency, row.posting_id, new Date(row.posting_date), row.image));
                         } catch (error) {
                             reject(error);
                         }
@@ -103,12 +155,12 @@ export class Posting {
         this.posting_date = new Date();
         if (this.saved) {
             this.db.run(`UPDATE ${Posting.tableName}
-                         SET author = ?, title = ?, description = ?, posting_date = ?
-                         WHERE posting_id = ?`, this.author.user_id, this.title, this.description, this.posting_date.toISOString(), this.postingId);
+                         SET author = ?, title = ?, description = ?, posting_date = ?, image = ?, price = ?, currency = ?
+                         WHERE posting_id = ?`, this.author.user_id, this.title, this.description, this.posting_date.toISOString(), this.image ?? null, this.price, Currency.toString(this.currency), this.postingId);
         } else {
             this.postingId = await new Promise<number>((resolve, reject) =>
-                this.db.run(`INSERT INTO ${Posting.tableName} (author, title, description, posting_date)
-                             VALUES (?, ?, ?, ?)`, this.author.user_id, this.title, this.description, this.posting_date.toISOString(),
+                this.db.run(`INSERT INTO ${Posting.tableName} (author, title, description, posting_date, image, price, currency)
+                             VALUES (?, ?, ?, ?, ?, ?, ?)`, this.author.user_id, this.title, this.description, this.posting_date.toISOString(), this.image ?? null, this.price, Currency.toString(this.currency),
                     function (error: Error) {
                         if (error) {
                             reject(error);

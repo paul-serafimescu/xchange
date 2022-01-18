@@ -4,11 +4,17 @@ import { apiRouter } from './routes/api-router';
 import { pagesRouter } from './routes/pages-router';
 import { staticsRouter } from './routes/statics-router';
 import * as config from './config';
+import {
+  Posting, User, db
+} from './models';
 
 console.log(`*******************************************`);
 console.log(`NODE_ENV: ${process.env.NODE_ENV}`);
 console.log(`config: ${JSON.stringify(config, null, 2)}`);
 console.log(`*******************************************`);
+
+// generate proper database schemas 
+db.initialize(User.builder, Posting.builder);
 
 const app = express();
 app.set('view engine', 'ejs');
