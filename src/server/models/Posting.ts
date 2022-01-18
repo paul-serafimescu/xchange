@@ -1,6 +1,12 @@
 import db, { IBuilder } from '../db';
 import User from './User';
+import Currency from './Currency';
+import fs from 'fs';
+import path from 'path';
 
+/**
+ * represents raw data types extracted from database
+ */
 export interface IPostingRow {
     readonly posting_id: number;
     readonly author: number;
@@ -12,46 +18,18 @@ export interface IPostingRow {
     readonly currency: Currency.Code;
 }
 
+/**
+ * represents abstracted Posting data type
+ */
 export interface IPosting {
-    readonly posting_id?: number;
-    readonly author: User;
-    readonly postingDate?: Date;
-    readonly title: string;
-    readonly description: string;
-    readonly image?: string;
-    readonly price: number;
-    readonly currency: Currency;
-}
-
-/**
- * TODO: Image Field and Currency
- * idea: namespace/enum merging
- */
-
-/**
- * numeric enum representation of currency
- */
-export enum Currency {
-    USD, ILS, MXN, UNKNOWN
-}
-
-export namespace Currency {
-    export const Translation = {
-        USD: Currency.USD,
-        ILS: Currency.ILS,
-        MXN: Currency.MXN,
-    };
-
-    export type Code = keyof typeof Translation;
-
-    export function toString(c: Currency): string {
-        console.log("stringified:", Currency[c]);
-        return Currency[c];
-    }
-
-    export function from(str: string): Currency {
-        return Translation[str] ?? Currency.UNKNOWN;
-    }
+    posting_id?: number;
+    author: User;
+    postingDate?: Date;
+    title: string;
+    description: string;
+    image?: string;
+    price: number;
+    currency: Currency;
 }
 
 export class Posting {
@@ -82,9 +60,40 @@ export class Posting {
     public currency: Currency;
     private saved: boolean;
 
+    /**
+     * model builder instance
+     * used for populating default data, creating the database representation, etc. in main.ts
+     */
     public static builder = new class implements IBuilder {
+
+        readonly sampleData = [
+            {
+                author: 2,
+                posting_date: new Date().toISOString(),
+                title: 'sample title 1',
+                description: 'sample description 1',
+                image: 'default-placeholder.png',
+                price: 675.89,
+                currency: 'USD'
+            },
+            {
+                author: 2,
+                posting_date: new Date().toISOString(),
+                title: 'sample title 2',
+                description: 'sample description 2',
+                image: '2cdbba22-19d2-450c-bd16-7391df188816.png',
+                price: 44.00,
+                currency: 'MXN'
+            },
+        ];
+
+        /**
+         * creates table schema
+         * 
+         * `async` function 
+         */ 
         public buildTable = () => new Promise<void>((resolve, reject) => {
-            db.run(`CREATE TABLE IF NOT EXISTS Postings
+            db.run(`CREATE TABLE IF NOT EXISTS ${Posting.tableName}
                                 (posting_id INTEGER PRIMARY KEY AUTOINCREMENT,
                                 author INTEGER,
                                 posting_date TEXT,
@@ -101,6 +110,25 @@ export class Posting {
                                     }
                                 });
         });
+
+        /**
+         * populates table with default data
+         * 
+         * `async` function
+         */
+        public populateTable = async () => {
+            const sql = `INSERT INTO ${Posting.tableName} (author, posting_date, title, description, image, price, currency)
+                              VALUES (?, ?, ?, ?, ?, ?, ?)`;
+            await Promise.all(this.sampleData.map(data => new Promise<void>((resolve, reject) => {
+                db.run(sql, ...Object.values(data), function (error: Error) {
+                    if (error) {
+                        reject(error);
+                    } else {
+                        resolve();
+                    }
+                })
+            })));
+        }
     }();
 
     /**
@@ -125,7 +153,12 @@ export class Posting {
         this.currency = Currency.from(currency);
     }
 
-    static build = async (id: number, withAuthor = false) => new Promise<Posting>((resolve, reject) => {
+    /**
+     * build an instance of Posting from a primary key. assumes model already exists
+     * @param id Posting primary key
+     * @param withAuthor whether or not to include the author data
+     */
+    public static build = async (id: number, withAuthor = false) => new Promise<Posting>((resolve, reject) => {
         db.get(`SELECT * FROM ${Posting.tableName}
                 WHERE posting_id = ?`, id, async function (error: Error, row: IPostingRow) {
                     if (error) {
@@ -141,17 +174,41 @@ export class Posting {
         });
     });
 
-    static delete = async (id: number) => new Promise<void>((resolve, reject) => {
-        db.run(`DELETE FROM ${Posting.tableName} WHERE posting_id = ?`, id, function (error) {
-            if (error) {
-                reject(error);
-            } else {
-                resolve();
+    /**
+     * delete a saved Posting permanently by primary key
+     * @param id Posting primary key
+     */
+    public static delete = async (id: number) => {
+        return new Promise<void>(async (resolve, reject) => {
+            try {
+                const posting = await Posting.build(id, true);
+                if (posting.image !== 'default-placeholder.png') {
+                    fs.unlink(path.join(process.cwd(), 'assets', 'uploads', posting.image), error => {
+                        if (error) {
+                            return reject(error);
+                        }
+                    });
+                }
+            } catch (error) {
+                return reject(error);
             }
+            db.run(`DELETE FROM ${Posting.tableName} WHERE posting_id = ?`, id, function (error) {
+                if (error) {
+                    reject(error);
+                } else {
+                    resolve();
+                }
+            });
         });
-    });
+    }
 
-    save = async (): Promise<Posting> => {
+    /**
+     * save a Posting to the database
+     * 
+     * either updates the old posting or inserts a new row depending on the presence of a primary key `posting_id`
+     * @returns a Promise with the instance with `posting_id` included, regardless
+     */
+    public save = async (): Promise<Posting> => {
         this.posting_date = new Date();
         if (this.saved) {
             this.db.run(`UPDATE ${Posting.tableName}

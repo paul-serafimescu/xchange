@@ -10,7 +10,9 @@ import {
   User, IUser, createUser,
   Posting, IPosting, Currency
 } from '../models';
+import Middleware from './middleware';
 
+const { protectedByUser } = Middleware;
 const { Schema } = Validation;
 
 const storage = multer.diskStorage({
@@ -35,15 +37,6 @@ const storage = multer.diskStorage({
 });
 
 const upload = multer({ storage: storage });
-
-export function useToken(request: Request): string[] {
-  const authorization = request.headers.authorization;
-  if (!authorization) {
-    throw new Error('invalid authorization');
-  } else {
-    return authorization.split(/\s+/);
-  }
-}
 
 export function apiRouter() {
   const router = Router();
@@ -97,18 +90,21 @@ export function apiRouter() {
 
         res.status(200).send({ message: 'ok' });
       } catch (error) {
-        console.error(error);
-        res.status(500).send({ message: 'server failure' });
+        switch (error.errno) {
+          case 19:
+            return res.status(400).send({ message: 'an account already exists with this email' });
+          default:
+            return res.status(500).send({ message: 'server failure' });
+        }
       }
     } else {
       res.status(400).send({ message: 'failure' });
     }
   });
 
-  router.get('/api/@me/postings', async (req, res) => {
+  router.get('/api/@me/postings', protectedByUser, async (req, res) => {
     try {
-      const [_, token] = useToken(req);
-      const user = createUser(<IUser>jwt.verify(token, config.JWT_SECRET));
+      const user = createUser(req.user);
 
       try {
         const postings = await user.fetchPostings();
@@ -123,15 +119,20 @@ export function apiRouter() {
     }
   });
 
-  router.post('/api/postings/', upload.single('image'), async (req: Request<{}, {}, IPosting>, res) => {
+  router.post('/api/postings/', upload.single('image'), protectedByUser, async (req: Request< {}, {}, IPosting>, res) => {
     try {
-      const [_, token] = useToken(req);
-      const user = createUser(<User>jwt.verify(token, config.JWT_SECRET));
+      const user = createUser(req.user);
+
+      req.body.price = Number(req.body.price);
+      if (isNaN(req.body.price)) {
+        return res.status(400).send({ message: 'invalid request body'});
+      }
+
       const schema = new Schema({
         title: 'string',
         description: 'string',
         currency: 'string',
-        price: 'string',
+        price: 'number',
       });
 
       if (schema.validate(req.body)) {
@@ -152,15 +153,19 @@ export function apiRouter() {
     }
   });
 
-  router.delete('/api/postings/:postingId', async (req: Request<{ postingId: string }>, res) => {
+  router.delete('/api/postings/:postingId', protectedByUser, async (req: Request<{ postingId: string }>, res) => {
     try {
-      const _ = useToken(req);
+      const user = req.user;
       const id = Number(req.params.postingId);
 
       if (isNaN(id)) {
         res.status(404).send({ message: 'resource not found' });
       } else {
         try {
+          const posting = await Posting.build(id, true);
+          if (posting.author.user_id !== user.user_id) {
+            return res.status(404).send({ message: 'resource not found' });
+          }
           await Posting.delete(id);
         } catch (error) {
           console.error(error);

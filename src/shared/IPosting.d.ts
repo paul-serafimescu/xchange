@@ -7,4 +7,6 @@ declare export default interface IPosting {
     readonly title: string;
     readonly description: string;
     readonly image?: string;
+    readonly price: number;
+    readonly currency: string;
 }

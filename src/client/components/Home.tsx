@@ -32,7 +32,7 @@ function renderModal(
     const handleDescriptionChange: ChangeEventHandler = event => setDescription(event.target.value);
     const handlePriceChange: ChangeEventHandler = event => {
       const newDigit = event.target.value;
-      if (!isNaN(Number(event.target.value))) {
+      if (!isNaN(Number(newDigit))) {
         setPrice(newDigit);
       }
     }
@@ -46,7 +46,7 @@ function renderModal(
 
     const handleModalSubmit: ButtonEventHandler = async event => {
       event.preventDefault();
-      await createPosting(title, description, Number(price), image);
+      await createPosting(title, description, Math.round(Number(price) * 1e2) / 1e2, image);
       handleModalClose();
       reset();
     };
@@ -125,7 +125,7 @@ export const LoggedInView: React.FC = () => {
     setCreationDialog(true);
   };
 
-  const handleModalClose = (...args: any[]) => setCreationDialog(false);
+  const handleModalClose = () => setCreationDialog(false);
 
   const createPosting = async (title: string, description: string, price: number, image: File) => {
     const factory = new HTTPRequestFactory({ authorizationToken: useToken() });
@@ -151,6 +151,8 @@ export const LoggedInView: React.FC = () => {
             posting_date: new Date(),
             posting_id: response.data.id,
             image: response.data.image,
+            price: price,
+            currency: 'USD',
           });
           break;
         default:

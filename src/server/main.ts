@@ -14,7 +14,13 @@ console.log(`config: ${JSON.stringify(config, null, 2)}`);
 console.log(`*******************************************`);
 
 // generate proper database schemas 
-db.initialize(User.builder, Posting.builder);
+(async () => {
+  await db.initialize(User.builder, Posting.builder);
+
+  if (config.IS_DEV) {
+    // await db.populateDefaults(User.builder, Posting.builder);
+  }
+})();
 
 const app = express();
 app.set('view engine', 'ejs');

@@ -27,21 +27,25 @@ function Copyright(props: any) {
 
 export default function SignUp() {
   const navigate = useNavigate();
+  const [emailError, setEmailError] = React.useState('');
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const data = new FormData(event.currentTarget);
     const factory = new HTTPRequestFactory();
 
-    const response = await factory.post('/api/users', {
+    const response = await factory.post<{ message: string }>('/api/users', {
       firstName: data.get('firstName'),
       lastName: data.get('lastName'),
       email: data.get('email'),
       password: data.get('password'),
     });
 
-    if (response.status === 200) {
-      navigate('/login');
+    switch (response.status) {
+      case 200:
+        return navigate('/login');
+      case 400:
+        setEmailError(response.data.message);
     }
   };
 
@@ -93,6 +97,8 @@ export default function SignUp() {
                 label="Email Address"
                 name="email"
                 autoComplete="email"
+                error={Boolean(emailError)}
+                helperText={emailError}
             />
             </Grid>
             <Grid item xs={12}>
