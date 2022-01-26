@@ -1,6 +1,7 @@
 import db, { IBuilder } from '../db';
 import md5 from 'md5';
-import Posting from './Posting';
+import Posting, { IPostingRow, IPosting } from './Posting';
+import Currency from './Currency';
 
 /**
  * represents raw data types extracted from database
@@ -185,6 +186,22 @@ export class User {
         }
         return this;
     }
+
+    // TODO: order by clicks, assign each posting a number of clicks/relevance
+    public async search(query: string, limit: number = 10): Promise<{ posting_id: number, title: string }[]> {
+        return new Promise((resolve, reject) => this.db.all(`SELECT * FROM ${Posting.tableName}
+                                                             WHERE title LIKE '${query}%' LIMIT ${limit}`,
+            function (err, rows: IPostingRow[]) {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(rows.map(row => ({
+                        posting_id: row.posting_id,
+                        title: row.title
+                    })));
+                }
+        }));
+    };
 }
 
 export default User;

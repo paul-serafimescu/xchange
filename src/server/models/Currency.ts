@@ -5,7 +5,8 @@
  * Represents ISO 4217 3-digit code for international currencies
  */
 export enum Currency {
-    USD, ILS, MXN, UNKNOWN
+    USD, ILS, MXN, 
+    UNKNOWN
 }
 
 export namespace Currency {

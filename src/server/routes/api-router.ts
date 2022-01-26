@@ -153,6 +153,29 @@ export function apiRouter() {
     }
   });
 
+  router.get('/api/postings/search', protectedByUser, async (req: Request<{}, {}, {}, { search: string }>, res) => {
+    try {
+      const schema = new Schema({
+        search: 'string'
+      });
+
+      if (schema.validate(req.query)) {
+        const user = createUser(req.user);
+        try {
+          const results = await user.search(req.query.search);
+          res.status(200).send(results);
+        } catch (error) {
+          console.error(error);
+          res.status(500).send({ message: 'server error' });
+        }
+      } else {
+        return res.status(400).send({ message: 'invalid request' });
+      }
+    } catch (error) {
+      return res.status(400).send({ message: 'invalid token' });
+    }
+  });
+
   router.delete('/api/postings/:postingId', protectedByUser, async (req: Request<{ postingId: string }>, res) => {
     try {
       const user = req.user;
@@ -177,7 +200,7 @@ export function apiRouter() {
       console.error(error);
       res.status(400).send({ message: 'invalid token' });
     }
-  })
+  });
 
   return router;
 }

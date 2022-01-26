@@ -1,6 +1,6 @@
 import type IUser from './IUser';
 
-declare export default interface IPosting {
+declare interface IPosting {
     readonly posting_id?: number;
     readonly author: IUser;
     readonly posting_date?: Date;
@@ -10,3 +10,5 @@ declare export default interface IPosting {
     readonly price: number;
     readonly currency: string;
 }
+
+export default IPosting;

@@ -13,7 +13,7 @@ const plugins = [new WebpackManifestPlugin({})];
 const nodeModulesPath = path.resolve(__dirname, 'node_modules');
 const targets = IS_DEV ? { chrome: '79', firefox: '72' } : '> 0.25%, not dead';
 
-const config: Configuration = {
+const config = {
   mode: IS_DEV ? 'development' : 'production',
   devtool: IS_DEV ? 'inline-source-map' : false,
   entry: ['./src/client/client'],
@@ -82,9 +82,12 @@ const config: Configuration = {
   },
   devServer: {
     port: WEBPACK_PORT,
-    overlay: IS_DEV,
+    client: {
+      overlay: IS_DEV,
+    },
     open: IS_DEV,
-    openPage: `http://localhost:${SERVER_PORT}`,
+    liveReload: true,
+    // openPage: `http://localhost:${SERVER_PORT}`,
   },
   plugins,
   externals: {

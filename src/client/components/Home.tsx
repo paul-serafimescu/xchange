@@ -9,15 +9,18 @@ import Modal from '@mui/material/Modal';
 import Box from '@mui/material/Box';
 import TextField from '@mui/material/TextField';
 import PlusIcon from '@mui/icons-material/AddCircleOutlineOutlined'
+import Select, { SelectChangeEvent } from '@mui/material/Select';
+import MenuItem from '@mui/material/MenuItem';
 import Posting from './Posting';
 import IPosting from '../../shared/IPosting';
+import ICurrency from '../../shared/ICurrency';
 import './css/Home.scss';
 
 function renderModal(
   creating: boolean,
   handleModalClose: (...args: any[]) => void,
   modalStyle: any,
-  createPosting: (title: string, description: string, price: number, image: File) => Promise<void>) {
+  createPosting: (title: string, description: string, price: number, currency: ICurrency, image: File) => Promise<void>) {
 
     type ButtonEventHandler = React.MouseEventHandler<HTMLButtonElement>;
 
@@ -25,6 +28,7 @@ function renderModal(
     const [description, setDescription] = React.useState('');
     const [price, setPrice] = React.useState('');
     const [image, loadImage] = React.useState<File>(null);
+    const [currency, setCurrency] = React.useState<ICurrency>('USD');
 
     type ChangeEventHandler = React.ChangeEventHandler<HTMLInputElement | HTMLTextAreaElement>;
 
@@ -42,11 +46,12 @@ function renderModal(
       setDescription('');
       setPrice('');
       loadImage(null);
+      setCurrency('USD');
     };
 
     const handleModalSubmit: ButtonEventHandler = async event => {
       event.preventDefault();
-      await createPosting(title, description, Math.round(Number(price) * 1e2) / 1e2, image);
+      await createPosting(title, description, Math.round(Number(price) * 1e2) / 1e2, currency, image);
       handleModalClose();
       reset();
     };
@@ -62,6 +67,11 @@ function renderModal(
       if (event.target.files && event.target.files[0]) {
         loadImage(event.target.files[0]);
       }
+    };
+
+    const handleCurrencyChange = (event: SelectChangeEvent<ICurrency>) => {
+      event.preventDefault();
+      setCurrency(event.target.value as ICurrency);
     };
 
     return (
@@ -83,9 +93,16 @@ function renderModal(
             sx={{'& .MuiTextField-root': { m: 1, width: '25ch' }}}
           >
             <Box padding={1}>
-              <TextField required label="title" onChange={handleTitleChange} value={title} />
-              <TextField required label="description" onChange={handleDescriptionChange} value={description} />
-              <TextField required label="price" onChange={handlePriceChange} value={price} />
+              <Box>
+                <TextField required label="title" onChange={handleTitleChange} value={title} />
+                <TextField required label="description" onChange={handleDescriptionChange} value={description} />
+                <TextField required label="price" onChange={handlePriceChange} value={price} />
+                <Select value={currency} onChange={handleCurrencyChange} style={{ width: '70%', margin: '8px' }}>
+                  <MenuItem value="USD">USD</MenuItem>
+                  <MenuItem value="ILS">ILS</MenuItem>
+                  <MenuItem value="MXN">MXN</MenuItem>
+                </Select>
+              </Box>
               {image && (
                 <div>
                   <img alt="not found" src={URL.createObjectURL(image)} />
@@ -127,17 +144,18 @@ export const LoggedInView: React.FC = () => {
 
   const handleModalClose = () => setCreationDialog(false);
 
-  const createPosting = async (title: string, description: string, price: number, image: File) => {
+  const createPosting = async (title: string, description: string, price: number, currency: ICurrency, image: File) => {
     const factory = new HTTPRequestFactory({ authorizationToken: useToken() });
     const formData = new FormData();
 
     if (image) {
       formData.append('image', image, image.name);
     }
+
     formData.append('title', title);
     formData.append('description', description);
     formData.append('price', String(price));
-    formData.append('currency', 'USD');
+    formData.append('currency', currency);
 
     try {
       const response = await factory.post<{ id: number, image: string }>('api/postings', formData);

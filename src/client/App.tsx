@@ -9,6 +9,7 @@ import LoginPage from './components/Login';
 import LogoutPage from './components/Logout';
 import SideMenu from './components/SideMenu';
 import SignupPage from './components/Signup';
+import SearchPage from './components/SearchPage';
 
 export const AppRoutes: React.FC = () => (
   <Routes>
@@ -17,6 +18,7 @@ export const AppRoutes: React.FC = () => (
     <Route path='/login' element={<LoginPage />} />
     <Route path='/logout' element={<LogoutPage />} />
     <Route path='/router-example/:slug' element={<RouterTest />} />
+    <Route path='/search' element={<SearchPage />} />
   </Routes>
 );
 

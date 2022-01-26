@@ -1,11 +1,10 @@
-import dotenv from 'dotenv';
-import findUp from 'find-up';
-import path from 'path';
-import fs from 'fs';
+import * as dotenv from 'dotenv';
+import * as path from 'path';
+import * as fs from 'fs';
 
 const IS_DEV = process.env.NODE_ENV !== 'production';
 
-dotenv.config({ path: findUp.sync('.env') });
+dotenv.config({ path: path.join(process.cwd(), '.env') });
 
 const packageJsonPath = path.join(process.cwd(), 'package.json');
 const rawPackageJson = fs.readFileSync(packageJsonPath).toString();
