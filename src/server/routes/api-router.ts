@@ -42,7 +42,17 @@ export function apiRouter() {
   const router = Router();
   router.use(bodyParser.json());
 
-  router.post('/api/@me', async (req: Request<{}, {}, { email: string, password: string, remember: boolean }>, res) => {
+  router.get('/api/@me', protectedByUser, async (req, res) => {
+    const user = createUser(req.user);
+    return res.send({
+      user_id: user.user_id,
+      email: user.email,
+      firstName: user.firstName,
+      lastName: user.lastName,
+    });
+  });
+
+  router.post('/api/@me/login', async (req: Request<{}, {}, { email: string, password: string, remember: boolean }>, res) => {
     const userSchema = new Schema({
       email: 'string',
       password: 'string',
@@ -61,7 +71,15 @@ export function apiRouter() {
           password: user.password
         }, config.JWT_SECRET);
 
-        res.status(200).send({ message: 'ok', token: token, remember: req.body.remember });
+        res.status(200).send({
+          message: 'ok',
+          token: token,
+          remember: req.body.remember,
+          user_id: user.user_id,
+          firstName: user.firstName,
+          lastName: user.lastName,
+          email: user.email,
+        });
       } catch (error) {
         console.error(error);
         res.status(400).send({ message: 'invalid credentials' });
@@ -163,6 +181,7 @@ export function apiRouter() {
         const user = createUser(req.user);
         try {
           const results = await user.search(req.query.search);
+          console.log(results);
           res.status(200).send(results);
         } catch (error) {
           console.error(error);

@@ -9,20 +9,29 @@ import LoginPage from './components/Login';
 import LogoutPage from './components/Logout';
 import SideMenu from './components/SideMenu';
 import SignupPage from './components/Signup';
-import SearchPage from './components/SearchPage';
+import ProfilePage from './components/ProfilePage';
+import { loadUser } from './reducers/userSlice';
+import { useAppDispatch } from './app/hooks';
+import { useToken } from './utils';
 
 export const AppRoutes: React.FC = () => (
   <Routes>
     <Route path='/' element={<Home />} />
+    <Route path='/profile' element={<ProfilePage />} />
     <Route path='/signup' element={<SignupPage />} />
     <Route path='/login' element={<LoginPage />} />
     <Route path='/logout' element={<LogoutPage />} />
     <Route path='/router-example/:slug' element={<RouterTest />} />
-    <Route path='/search' element={<SearchPage />} />
   </Routes>
 );
 
 export const App: React.FC = () => {
+
+  const dispatch = useAppDispatch();
+
+  React.useEffect(() => {
+    dispatch(loadUser(useToken()));
+  }, []);
 
   const preferDark = useMediaQuery('(prefers-color-scheme: dark)');
 
@@ -57,8 +66,8 @@ export const App: React.FC = () => {
             <Header setTheme={setTheme} generateTheme={generateTheme} currentTheme={theme.palette.mode} />
             <SideMenu />
             <Box component="main" sx={{ flexGrow: 1, p: 3 }}>
-            <Toolbar />
-            <AppRoutes />
+              <Toolbar />
+              <AppRoutes />
             </Box>
           </Box>
         </ThemeProvider>

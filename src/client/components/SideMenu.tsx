@@ -1,6 +1,7 @@
 import HomeIcon from '@mui/icons-material/Home';
 import LoginIcon from '@mui/icons-material/Login';
 import LogoutIcon from '@mui/icons-material/Logout';
+import ProfileIcon from '@mui/icons-material/AccountCircle';
 import { Divider, Drawer, List, ListItem, ListItemIcon, ListItemText } from '@mui/material';
 import * as React from 'react';
 import { Link as RouterLink } from 'react-router-dom';
@@ -34,6 +35,12 @@ export const SideMenu: React.FC = () => {
             <LoginIcon />
           </ListItemIcon>
           <ListItemText primary='Sign in' />
+        </ListItem>
+        <ListItem button component={RouterLink} to='/profile'>
+          <ListItemIcon>
+            <ProfileIcon />
+          </ListItemIcon>
+          <ListItemText primary='Your Profile' />
         </ListItem>
         <ListItem button component={RouterLink} to='/logout'>
           <ListItemIcon>

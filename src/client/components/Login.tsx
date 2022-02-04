@@ -12,7 +12,8 @@ import Box from '@mui/material/Box';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
-import { HTTPRequestFactory } from '../../shared/utils';
+import { authenticate, selectUser } from '../reducers/userSlice';
+import { useAppSelector, useAppDispatch } from '../app/hooks';
 
 function Copyright(props: any) {
   return (
@@ -31,36 +32,20 @@ export default function SignIn() {
   const navigate = useNavigate();
   const [remember, setRemember] = React.useState(false);
   const [error, setError] = React.useState('');
+  const dispatch = useAppDispatch();
+  const user = useAppSelector(selectUser);
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     
     const data = new FormData(event.currentTarget);
-    const factory = new HTTPRequestFactory();
+    await dispatch(authenticate({
+      email: data.get('email').toString(),
+      password: data.get('password').toString(),
+      remember: remember
+    }));
 
-    const response = await factory.post<{ token: string, message: string, remember: boolean }>('/api/@me', {
-      email: data.get('email'),
-      password: data.get('password'),
-      remember: remember,
-    });
-
-    switch (response.status) {
-      case 200:
-        if (response.data.remember) {
-          localStorage.setItem('token', response.data.token);
-          sessionStorage.removeItem('token');
-        } else {
-          sessionStorage.setItem('token', response.data.token);
-          localStorage.removeItem('token');
-        }
-        navigate('/');
-        break;
-      case 400:
-        setError(response.data.message);
-        break;
-      default:
-        break;
-    }
+    return navigate('/');
   };
 
   const rememberMe = (event: React.ChangeEvent<HTMLInputElement>, checked: boolean) => {

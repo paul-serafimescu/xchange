@@ -28,6 +28,17 @@ export function createUser(obj: IUser): User {
     return new User(obj.firstName, obj.lastName, obj.email, obj.password, obj.user_id);
 }
 
+export interface IPostingSearch {
+    posting_id: number;
+    title: string;
+    currency: Currency;
+    description: string;
+    posting_date: Date;
+    image: string;
+    price: number;
+    author: User;
+}
+
 export class User {
     /**
      * SCHEMA:
@@ -40,7 +51,7 @@ export class User {
      * }
      */
 
-    protected readonly db = db;
+    private readonly db = db;
 
     public static tableName = 'Users';
 
@@ -187,8 +198,34 @@ export class User {
         return this;
     }
 
-    // TODO: order by clicks, assign each posting a number of clicks/relevance
-    public async search(query: string, limit: number = 10): Promise<{ posting_id: number, title: string }[]> {
+    /**
+     * search for postings by query
+     * @param query search query
+     * @param limit optional limit to results, defaults to 10
+     * @returns search result, including author
+     */
+    public async search(query: string, limit: number = 10): Promise<IPostingSearch[]> {
+        return new Promise((resolve, reject) => this.db.all(`SELECT * FROM ${Posting.tableName}
+                                                             WHERE title LIKE '${query}%' LIMIT ${limit}`,
+            async function (err, rows: IPostingRow[]) {
+                if (err) {
+                    reject(err);
+                } else {
+                    resolve(Promise.all(rows.map(async row => ({
+                        posting_id: row.posting_id,
+                        title: row.title,
+                        currency: Currency.from(row.currency),
+                        description: row.description,
+                        image: row.image,
+                        price: row.price,
+                        posting_date: new Date(row.posting_date),
+                        author: await User.build(row.author)
+                    }))));
+                }
+        }));
+    };
+
+    public async suggest(query: string, limit: number = 10): Promise<{}> {
         return new Promise((resolve, reject) => this.db.all(`SELECT * FROM ${Posting.tableName}
                                                              WHERE title LIKE '${query}%' LIMIT ${limit}`,
             function (err, rows: IPostingRow[]) {
@@ -201,7 +238,7 @@ export class User {
                     })));
                 }
         }));
-    };
+    }
 }
 
 export default User;
