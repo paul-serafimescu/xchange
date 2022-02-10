@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useNavigate } from 'react-router';
+import * as Router from 'react-router';
 import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -29,7 +29,7 @@ function Copyright(props: any) {
 }
 
 export default function SignIn() {
-  const navigate = useNavigate();
+  const navigate = Router.useNavigate();
   const [remember, setRemember] = React.useState(false);
   const [error, setError] = React.useState('');
   const dispatch = useAppDispatch();

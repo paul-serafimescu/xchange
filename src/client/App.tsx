@@ -1,28 +1,31 @@
 import * as React from 'react';
-import { Box, Toolbar, useMediaQuery } from '@mui/material';
-import { createTheme, ThemeProvider } from '@mui/material/styles';
-import { BrowserRouter, Route, Routes } from 'react-router-dom';
-import { Header } from './components/Header';
+import * as Router from 'react-router-dom';
+import Box from '@mui/material/Box';
+import Toolbar from '@mui/material/Toolbar';
+import useMediaQuery from '@mui/material/useMediaQuery';
+import createTheme from '@mui/material/styles/createTheme';
+import ThemeProvider from '@mui/material/styles/ThemeProvider';
+import Header from './components/Header';
 import Home from './components/Home';
-import RouterTest from './components/RouterTest';
 import LoginPage from './components/Login';
 import LogoutPage from './components/Logout';
 import SideMenu from './components/SideMenu';
 import SignupPage from './components/Signup';
 import ProfilePage from './components/ProfilePage';
+import PostingPage from './components/PostingPage';
 import { loadUser } from './reducers/userSlice';
 import { useAppDispatch } from './app/hooks';
 import { useToken } from './utils';
 
 export const AppRoutes: React.FC = () => (
-  <Routes>
-    <Route path='/' element={<Home />} />
-    <Route path='/profile' element={<ProfilePage />} />
-    <Route path='/signup' element={<SignupPage />} />
-    <Route path='/login' element={<LoginPage />} />
-    <Route path='/logout' element={<LogoutPage />} />
-    <Route path='/router-example/:slug' element={<RouterTest />} />
-  </Routes>
+  <Router.Routes>
+    <Router.Route path='/' element={<Home />} />
+    <Router.Route path='/profile' element={<ProfilePage />} />
+    <Router.Route path='/signup' element={<SignupPage />} />
+    <Router.Route path='/login' element={<LoginPage />} />
+    <Router.Route path='/logout' element={<LogoutPage />} />
+    <Router.Route path='/postings/:postingID' element={<PostingPage />} />
+  </Router.Routes>
 );
 
 export const App: React.FC = () => {
@@ -60,7 +63,7 @@ export const App: React.FC = () => {
 
   return (
     <React.Fragment>
-      <BrowserRouter>
+      <Router.BrowserRouter>
         <ThemeProvider theme={theme}>
           <Box sx={{ display: 'flex' }}>
             <Header setTheme={setTheme} generateTheme={generateTheme} currentTheme={theme.palette.mode} />
@@ -71,7 +74,7 @@ export const App: React.FC = () => {
             </Box>
           </Box>
         </ThemeProvider>
-      </BrowserRouter>
+      </Router.BrowserRouter>
     </React.Fragment>
   );
 };

@@ -1,5 +1,6 @@
 import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
 import IPosting from '../../shared/IPosting';
+import { RootState } from '../app/store';
 
 // TODO: rest of this stuff
 
@@ -33,3 +34,8 @@ export const postingsSlice = createSlice({
         });
     }
 });
+
+export const { } = postingsSlice.actions;
+export const selectAllPostings = (state: RootState) => state.postings;
+
+export default postingsSlice.reducer;

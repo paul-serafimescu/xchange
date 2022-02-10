@@ -1,10 +1,14 @@
-import { AppBar, Toolbar, Typography, Switch } from '@mui/material';
+import * as React from 'react';
+import * as config from '../../shared/config';
 import type { Theme } from '@mui/material/styles';
+import AppBar from '@mui/material/AppBar';
+import Toolbar from '@mui/material/Toolbar';
+import Typography from '@mui/material/Typography';
+import Switch from '@mui/material/Switch';
 import MenuIcon from '@mui/icons-material/Menu';
 import DarkModeIcon from '@mui/icons-material/DarkMode';
 import LightModeIcon from '@mui/icons-material/LightMode';
 import ShoppingIcon from '@mui/icons-material/ShoppingCart';
-import * as React from 'react';
 
 export interface HeaderProps {
   currentTheme: 'light' | 'dark';
@@ -29,7 +33,7 @@ export const Header: React.FC<HeaderProps> = ({currentTheme, setTheme, generateT
           component='div'
           sx={{ flexGrow: 1, display: { xs: 'none', sm: 'block' }}}
         >
-          Luna
+          {config.APP_NAME}
         </Typography>
         {currentTheme === 'dark' ? <DarkModeIcon htmlColor='yellow' /> : <LightModeIcon htmlColor='yellow' />}
         <Switch color='info' checked={currentTheme === 'dark'} onClick={handleClick} />

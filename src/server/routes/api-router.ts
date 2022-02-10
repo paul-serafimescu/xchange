@@ -181,7 +181,6 @@ export function apiRouter() {
         const user = createUser(req.user);
         try {
           const results = await user.search(req.query.search);
-          console.log(results);
           res.status(200).send(results);
         } catch (error) {
           console.error(error);
@@ -192,6 +191,23 @@ export function apiRouter() {
       }
     } catch (error) {
       return res.status(400).send({ message: 'invalid token' });
+    }
+  });
+
+  // accessible to everyone (no user authentication required)
+  router.get('/api/postings/:postingId', async (req: Request<{ postingId: string }>, res) => {
+    try {
+      const id = Number(req.params.postingId);
+      
+      if (isNaN(id)) {
+        res.status(404).send({ message: 'resource not found' });
+      } else {
+        const posting = await Posting.build(id, true);
+        res.status(200).send(posting.toJSON());
+      }
+    } catch (error) {
+      console.error(error);
+      res.status(400)
     }
   });
 

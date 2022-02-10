@@ -3,6 +3,8 @@ import User from './User';
 import Currency from './Currency';
 import fs from 'fs';
 import path from 'path';
+import { Serializable } from './Common';
+import { IUserJSON } from './User';
 
 /**
  * represents raw data types extracted from database
@@ -32,7 +34,17 @@ export interface IPosting {
     currency: Currency;
 }
 
-export class Posting {
+export interface SerializedPosting {
+    posting_id?: number;
+    author: IUserJSON;
+    postingDate?: string;
+    title: string;
+    description: string;
+    image?: string;
+    currency: string;
+}
+
+export class Posting implements Serializable<SerializedPosting> {
     /**
      * SCHEMA:
      * POSTING {
@@ -228,6 +240,18 @@ export class Posting {
         }
         return this;
     }
+
+    /**
+     * converts server-side representation to client-safe
+     */
+    public toJSON = () => ({
+        posting_id: this.postingId,
+        author: this.author.toJSON(),
+        title: this.title,
+        description: this.description,
+        posting_date: this.posting_date.toISOString(),
+        currency: Currency.toString(this.currency),
+    });
 }
 
 export default Posting;

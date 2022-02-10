@@ -1,11 +1,16 @@
+import * as React from 'react';
+import * as Router from 'react-router-dom';
+import Divider from '@mui/material/Divider';
+import Drawer from '@mui/material/Drawer';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import Toolbar from '@mui/material/Toolbar';
 import HomeIcon from '@mui/icons-material/Home';
 import LoginIcon from '@mui/icons-material/Login';
 import LogoutIcon from '@mui/icons-material/Logout';
 import ProfileIcon from '@mui/icons-material/AccountCircle';
-import { Divider, Drawer, List, ListItem, ListItemIcon, ListItemText } from '@mui/material';
-import * as React from 'react';
-import { Link as RouterLink } from 'react-router-dom';
-import Toolbar from '@mui/material/Toolbar';
 
 const drawerWidth = 240;
 
@@ -21,7 +26,7 @@ export const SideMenu: React.FC = () => {
     >
       <Toolbar />
       <List>
-        <ListItem button component={RouterLink} to='/'>
+        <ListItem button component={Router.Link} to='/'>
           <ListItemIcon>
             <HomeIcon />
           </ListItemIcon>
@@ -30,19 +35,19 @@ export const SideMenu: React.FC = () => {
       </List>
       <Divider />
       <List>
-        <ListItem button component={RouterLink} to='/login'>
+        <ListItem button component={Router.Link} to='/login'>
           <ListItemIcon>
             <LoginIcon />
           </ListItemIcon>
           <ListItemText primary='Sign in' />
         </ListItem>
-        <ListItem button component={RouterLink} to='/profile'>
+        <ListItem button component={Router.Link} to='/profile'>
           <ListItemIcon>
             <ProfileIcon />
           </ListItemIcon>
           <ListItemText primary='Your Profile' />
         </ListItem>
-        <ListItem button component={RouterLink} to='/logout'>
+        <ListItem button component={Router.Link} to='/logout'>
           <ListItemIcon>
             <LogoutIcon />
           </ListItemIcon>

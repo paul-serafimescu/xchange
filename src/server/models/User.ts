@@ -2,6 +2,7 @@ import db, { IBuilder } from '../db';
 import md5 from 'md5';
 import Posting, { IPostingRow, IPosting } from './Posting';
 import Currency from './Currency';
+import { Serializable } from './Common';
 
 /**
  * represents raw data types extracted from database
@@ -36,10 +37,17 @@ export interface IPostingSearch {
     posting_date: Date;
     image: string;
     price: number;
-    author: User;
+    author: IUserJSON;
 }
 
-export class User {
+export interface IUserJSON {
+    user_id?: number;
+    firstName: string;
+    lastName: string;
+    email: string;
+}
+
+export class User implements Serializable<IUserJSON> {
     /**
      * SCHEMA:
      * USER {
@@ -63,7 +71,7 @@ export class User {
 
     private saved: boolean;
     
-    constructor(firstName: string, lastName: string, email: string, password: string, user_id?: number) {
+    constructor (firstName: string, lastName: string, email: string, password: string, user_id?: number) {
         this.user_id = user_id;
         this.firstName = firstName;
         this.lastName = lastName;
@@ -71,6 +79,22 @@ export class User {
         this.password = md5(password);
         this.saved = Boolean(user_id);
     }
+
+    /**
+     * converts server-side object to client-safe representation.
+     * @returns JSONified object
+     */
+    public toJSON = () => {
+        const { user_id, firstName, lastName, email } = this;
+        const JSONified: IUserJSON = {
+            user_id,
+            firstName,
+            lastName,
+            email
+        };
+
+        return JSONified;
+    };
 
     public static builder = new class implements IBuilder {
 
@@ -219,12 +243,13 @@ export class User {
                         image: row.image,
                         price: row.price,
                         posting_date: new Date(row.posting_date),
-                        author: await User.build(row.author)
+                        author: (await User.build(row.author)).toJSON()
                     }))));
                 }
         }));
     };
 
+    // TODO: finish up this method, write a suggestion algorithm?
     public async suggest(query: string, limit: number = 10): Promise<{}> {
         return new Promise((resolve, reject) => this.db.all(`SELECT * FROM ${Posting.tableName}
                                                              WHERE title LIKE '${query}%' LIMIT ${limit}`,

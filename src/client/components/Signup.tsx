@@ -1,5 +1,5 @@
 import * as React from 'react';
-import { useNavigate } from 'react-router-dom';
+import * as Router from 'react-router-dom';
 import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import CssBaseline from '@mui/material/CssBaseline';
@@ -26,7 +26,7 @@ function Copyright(props: any) {
 }
 
 export default function SignUp() {
-  const navigate = useNavigate();
+  const navigate = Router.useNavigate();
   const [emailError, setEmailError] = React.useState('');
 
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {

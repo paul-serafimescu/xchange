@@ -4,10 +4,11 @@ import SearchIcon from '@mui/icons-material/Search';
 import IconButton from '@mui/material/IconButton';
 import InputAdornment from '@mui/material/InputAdornment';
 import Autocomplete from '@mui/material/Autocomplete';
-import { useToken } from '../utils';
+import { IPostingSearch } from './types';
 import { HTTPRequestFactory } from '../../shared/utils';
 import { selectUser } from '../reducers/userSlice';
 import { useAppSelector } from '../app/hooks';
+import { v4 as uuid } from 'uuid';
 
 import './css/Searchbar.scss';
 
@@ -16,26 +17,48 @@ export interface ISuggestion {
     title: string,
 }
 
-const Searchbar: React.FC = () => {
+export interface IProps {
+    readonly onResults?: (results: IPostingSearch[]) => void | Promise<void>;
+}
+
+const Searchbar: React.FC<IProps> = ({ onResults }) => {
     const user = useAppSelector(selectUser);
-    const factory = new HTTPRequestFactory({ authorizationToken: useToken() });
+    const factory = new HTTPRequestFactory({ authorizationToken: user.token });
 
     const [suggestions, setSuggestions] = React.useState<ISuggestion[]>([]);
     const [query, setQuery] = React.useState('');
     const [suggestionsCache, setSuggestionsCache] = React.useState<Record<string, ISuggestion[]>>({});
+    const [uniqueID, setID] = React.useState(uuid());
 
     const searchRef = React.useRef<HTMLInputElement>(null);
 
-    if (searchRef.current === document.activeElement) {
-        searchRef.current.onkeydown = event => {
-            event.preventDefault();
-
-            switch (event.key) {
-                case 'Enter':
-                    return // actually do the search
-            }
+    async function getResults(search: string) {
+        try {
+            const response = await factory.get<IPostingSearch[]>(`/api/postings/search?search=${search}`);
+            setID(uuid());
+            return response.data;
+        } catch (error) {
+            console.error(error);
         }
     }
+
+    React.useEffect(() => {
+        searchRef.current.onkeydown = async event => {
+            if (searchRef.current === document.activeElement) {
+                switch (event.key) {
+                    case 'Enter':
+                        if (query.length > 0) {
+                            try {
+                                const results = await getResults(query);
+                                onResults && onResults(results);
+                            } catch (error) {
+                                console.error(error);
+                            }
+                        }
+                }
+            }
+        }
+    }, [searchRef, query]);
 
     const handleQueryInput: React.ChangeEventHandler<HTMLInputElement> = async event => {
         event.preventDefault();
@@ -62,14 +85,20 @@ const Searchbar: React.FC = () => {
     };
 
     return (
-        <>
         <Autocomplete
+            key={uniqueID}
             options={suggestions}
             getOptionLabel={option => option.title}
             disableClearable
+            disableCloseOnSelect
+            clearIcon={<></>}
+            inputValue={query}
             onChange={(event, value) => {
                 event.preventDefault();
-                typeof value !== 'string' && setQuery(value.title);
+
+                if (typeof value === 'object') {
+                    setQuery(value.title);
+                }
             }}
             renderInput={params => (
                 <TextField label="Search"
@@ -82,21 +111,24 @@ const Searchbar: React.FC = () => {
                     InputProps={{
                         startAdornment: (
                             <InputAdornment position="start">
-                                <IconButton>
+                                <IconButton onClick={async event => {
+                                    event.preventDefault();
+                                    const results = await getResults(query);
+                                    onResults && onResults(results);
+                                }}>
                                     <SearchIcon />
                                 </IconButton>
                             </InputAdornment>
                         ),
                         type: 'search',
-                        endAdornment: params.InputProps.endAdornment,
+                        endAdornment: null,
                         className: params.InputProps.className,
                         ref: params.InputProps.ref,
+                        value: query
                     }}
                 />
             )}
         />
-        <h1>{user.firstName}</h1>
-        </>
     );
 };
 
