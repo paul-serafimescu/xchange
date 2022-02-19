@@ -16,6 +16,7 @@ export interface IUserJSON {
     firstName: string;
     lastName: string;
     email: string;
+    user_avatar: string;
 }
 
 export default IUserJSON;

@@ -13,6 +13,7 @@ export interface IUserRow {
     readonly lastName: string;
     readonly email: string;
     readonly password?: string;
+    readonly user_avatar: string;
 }
 
 /**
@@ -26,7 +27,7 @@ export interface IUser extends IUserRow {};
  * @returns User instance
  */
 export function createUser(obj: IUser): User {
-    return new User(obj.firstName, obj.lastName, obj.email, obj.password, obj.user_id);
+    return new User(obj.firstName, obj.lastName, obj.email, obj.password, obj.user_id, obj.user_avatar);
 }
 
 export interface IPostingSearch {
@@ -45,6 +46,7 @@ export interface IUserJSON {
     firstName: string;
     lastName: string;
     email: string;
+    user_avatar: string;
 }
 
 export class User implements Serializable<IUserJSON> {
@@ -56,6 +58,7 @@ export class User implements Serializable<IUserJSON> {
      *      lastName TEXT
      *      email TEXT
      *      password TEXT
+     *      user_avatar TEXT
      * }
      */
 
@@ -68,15 +71,17 @@ export class User implements Serializable<IUserJSON> {
     public lastName: string;
     public email: string;
     public password: string;
+    public user_avatar: string;
 
     private saved: boolean;
     
-    constructor (firstName: string, lastName: string, email: string, password: string, user_id?: number) {
+    constructor (firstName: string, lastName: string, email: string, password: string, user_id?: number, user_avatar?: string) {
         this.user_id = user_id;
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
         this.password = md5(password);
+        this.user_avatar = user_avatar;
         this.saved = Boolean(user_id);
     }
 
@@ -85,12 +90,13 @@ export class User implements Serializable<IUserJSON> {
      * @returns JSONified object
      */
     public toJSON = () => {
-        const { user_id, firstName, lastName, email } = this;
+        const { user_id, firstName, lastName, email, user_avatar } = this;
         const JSONified: IUserJSON = {
             user_id,
             firstName,
             lastName,
-            email
+            email,
+            user_avatar,
         };
 
         return JSONified;
@@ -103,13 +109,15 @@ export class User implements Serializable<IUserJSON> {
                 firstName: 'John',
                 lastName: 'Doe',
                 email: 'johndoe8@gmail.com',
-                password: md5('password1234')
+                password: md5('password1234'),
+                user_avatar: 'default-placeholder.png',
             },
             {
                 firstName: 'Jane',
                 lastName: 'Doe',
                 email: 'janedoe7@yahoo.com',
-                password: md5('12345678')
+                password: md5('12345678'),
+                user_avatar: 'default-placeholder.png',
             },
         ];
 
@@ -124,7 +132,8 @@ export class User implements Serializable<IUserJSON> {
                                 firstName TEXT,
                                 lastName TEXT,
                                 email TEXT UNIQUE,
-                                password TEXT)`, function (err) {
+                                password TEXT
+                                user_avatar TEXT)`, function (err) {
                                     if (err) {
                                         reject(err);
                                     } else {
@@ -139,8 +148,8 @@ export class User implements Serializable<IUserJSON> {
          * `async` function
          */
         public populateTable = async () => {
-            const sql = `INSERT INTO ${User.tableName} (firstName, lastName, email, password)
-                              VALUES (?, ?, ?, ?)`;
+            const sql = `INSERT INTO ${User.tableName} (firstName, lastName, email, password, user_avatar)
+                              VALUES (?, ?, ?, ?, ?)`;
             await Promise.all(this.sampleData.map(data => new Promise<void>((resolve, reject) => {
                 db.run(sql, ...Object.values(data), function (error: Error) {
                     if (error) {
@@ -182,7 +191,12 @@ export class User implements Serializable<IUserJSON> {
                     if (error) {
                         reject(error);
                     } else {
-                        resolve(new User(row.firstName, row.lastName, row.email, row.password, row.user_id));
+                        resolve(new User(row.firstName,
+                                         row.lastName,
+                                         row.email,
+                                         row.password,
+                                         row.user_id,
+                                         row.user_avatar));
                     }
                 }));
 
@@ -205,12 +219,12 @@ export class User implements Serializable<IUserJSON> {
     async save(): Promise<User> {
         if (this.saved) {
             this.db.run(`UPDATE ${User.tableName}
-                         SET firstName = ?, lastName = ?, email = ?, password = ?
-                         WHERE user_id = ?`, this.firstName, this.lastName, this.email, this.password, this.user_id);
+                         SET firstName = ?, lastName = ?, email = ?, password = ?, user_avatar = ?
+                         WHERE user_id = ?`, this.firstName, this.lastName, this.email, this.password, this.user_avatar, this.user_id);
         } else {
             this.user_id = await new Promise<number>((resolve, reject) =>
-                    this.db.run(`INSERT INTO ${User.tableName} (firstName, lastName, email, password)
-                                 VALUES (?, ?, ?, ?)`, this.firstName, this.lastName, this.email, this.password,
+                    this.db.run(`INSERT INTO ${User.tableName} (firstName, lastName, email, password, user_avatar)
+                                 VALUES (?, ?, ?, ?)`, this.firstName, this.lastName, this.email, this.password, this.user_avatar,
                         function (error: Error) {
                             if (error) {
                                 reject(error);

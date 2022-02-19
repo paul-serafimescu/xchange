@@ -251,6 +251,8 @@ export class Posting implements Serializable<SerializedPosting> {
         description: this.description,
         posting_date: this.posting_date.toISOString(),
         currency: Currency.toString(this.currency),
+        image: this.image,
+        price: this.price,
     });
 }
 

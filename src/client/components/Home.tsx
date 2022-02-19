@@ -5,16 +5,18 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemButton from '@mui/material/ListItemButton';
 import ListItemText from '@mui/material/ListItemText';
+import ListItemAvatar from '@mui/material/ListItemAvatar';
+import Avatar from '@mui/material/Avatar';
 import Typography from '@mui/material/Typography';
 import { IPostingSearch } from './types';
 import Searchbar from './Searchbar';
-import { useAppDispatch } from '../app/hooks';
-import { setCurrentPost } from '../reducers';
+import { useAppDispatch, useAppSelector } from '../app/hooks';
+import { setCurrentPost, setPostings, selectAllPostings } from '../reducers';
 
 export interface IPostingResultProps extends IPostingSearch {}
 
 export const PostingResult: React.FC<IPostingResultProps> = props => {
-  const { posting_id, author } = props;
+  const { posting_id, author, title, image } = props;
 
   const navigate = Router.useNavigate();
   const dispatch = useAppDispatch();
@@ -28,20 +30,26 @@ export const PostingResult: React.FC<IPostingResultProps> = props => {
 
   return (
     <ListItem>
+      <ListItemAvatar>
+        <Avatar alt="help" src={`/assets/uploads/${image}`} />
+      </ListItemAvatar>
       <ListItemButton divider onClick={viewPosting}>
-        <ListItemText primary={`${author.firstName} ${author.lastName}`} />
+        <ListItemText primary={`${title}`} />
       </ListItemButton>
     </ListItem>
   );
 }
 
 const Home: React.FC = () => {
-  const [results, setResults] = React.useState<IPostingSearch[]>([]);
+  const loadedPosts = useAppSelector(selectAllPostings);
+  const [results, setResults] = React.useState<IPostingSearch[]>(loadedPosts.postings);
+  const dispatch = useAppDispatch();
 
   return (
     <React.Fragment>
       <Searchbar onResults={results => {
         setResults(results);
+        dispatch(setPostings(results));
       }} />
       {results.length > 0 && <Paper style={{
         padding: '1.5vh',

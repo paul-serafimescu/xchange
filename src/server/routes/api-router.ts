@@ -49,6 +49,7 @@ export function apiRouter() {
       email: user.email,
       firstName: user.firstName,
       lastName: user.lastName,
+      user_avatar: user.user_avatar,
     });
   });
 
@@ -68,7 +69,8 @@ export function apiRouter() {
           firstName: user.firstName,
           lastName: user.lastName,
           email: user.email,
-          password: user.password
+          password: user.password,
+          user_avatar: user.user_avatar,
         }, config.JWT_SECRET);
 
         res.status(200).send({
@@ -79,6 +81,7 @@ export function apiRouter() {
           firstName: user.firstName,
           lastName: user.lastName,
           email: user.email,
+          user_avatar: user.user_avatar,
         });
       } catch (error) {
         console.error(error);

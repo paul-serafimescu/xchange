@@ -4,6 +4,7 @@ declare interface IUser {
   readonly lastName: string;
   readonly email: string;
   readonly password?: string;
+  readonly user_avatar: string;
 }
 
 export default IUser;

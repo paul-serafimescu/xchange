@@ -17,6 +17,7 @@ export interface UserState {
     email: string;
     firstName: string;
     lastName: string;
+    user_avatar: string;
 }
 
 const initialState: UserState = {
@@ -27,9 +28,10 @@ const initialState: UserState = {
     email: null,
     firstName: null,
     lastName: null,
+    user_avatar: null,
 };
 
-export type UserResponse = { user_id: number, firstName: string, lastName: string, email: string };
+export type UserResponse = { user_id: number, firstName: string, lastName: string, email: string, user_avatar: string };
 
 export const loadUser = createAsyncThunk(
     'user/loadUser',
@@ -77,7 +79,7 @@ export const userSlice = createSlice({
                 } else {
                     sessionStorage.setItem('token', action.payload.token);
                 }
-                const { token, remember, email, firstName, lastName, user_id } = action.payload;
+                const { token, remember, email, firstName, lastName, user_id, user_avatar } = action.payload;
 
                 state.status = AuthStatus.AUTHENTICATED;
                 state.token = token;
@@ -86,17 +88,19 @@ export const userSlice = createSlice({
                 state.firstName = firstName;
                 state.lastName = lastName;
                 state.user_id = user_id;
+                state.user_avatar = user_avatar;
             }
         });
 
         builder.addCase(loadUser.fulfilled, (state, action) => {
             if (action.payload) {
-                const { email, firstName, lastName, user_id } = action.payload;
+                const { email, firstName, lastName, user_id, user_avatar } = action.payload;
                 
                 state.email = email;
                 state.firstName = firstName;
                 state.lastName = lastName;
                 state.user_id = user_id;
+                state.user_avatar = user_avatar;
                 state.status = AuthStatus.AUTHENTICATED;
             } else {
                 state.status = AuthStatus.GUEST;

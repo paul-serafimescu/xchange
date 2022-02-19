@@ -1,8 +1,6 @@
-import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
-import IPosting from '../../shared/IPosting';
+import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../app/store';
-
-// TODO: rest of this stuff
+import { SerializedPosting } from '../components/types';
 
 export enum PostingsStatus {
     LOADING = 'LOADING',
@@ -10,7 +8,7 @@ export enum PostingsStatus {
 }
 
 export interface PostingsState {
-    postings: IPosting[];
+    postings: SerializedPosting[];
     status: PostingsStatus;
 }
 
@@ -19,23 +17,19 @@ const initialState: PostingsState = {
     status: PostingsStatus.LOADING,
 }
 
-export const loadPostings = createAsyncThunk(
-    'postings/loadPostings',
-    async () => {}, // TODO: wrap this middleware logic up
-);
-
 export const postingsSlice = createSlice({
     name: 'postings',
     initialState,
-    reducers: {},
-    extraReducers: builder => {
-        builder.addCase(loadPostings.fulfilled, (state, action) => {
-            // TODO: state reducer
-        });
-    }
+    reducers: {
+        setPostings: (_, action: PayloadAction<SerializedPosting[]>) => ({
+            postings: action.payload,
+            status: PostingsStatus.DONE,
+        }),
+    },
+    extraReducers: builder => {},
 });
 
-export const { } = postingsSlice.actions;
+export const { setPostings, } = postingsSlice.actions;
 export const selectAllPostings = (state: RootState) => state.postings;
 
 export default postingsSlice.reducer;

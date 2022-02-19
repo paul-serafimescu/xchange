@@ -54,9 +54,9 @@ const Posting: React.FC<IProps> = ({ posting_id, posting_date, title, descriptio
     </React.Fragment>;
 
     return (
-        <Card className="posting-card" variant='outlined'>
+        <Card className="posting-card" variant='outlined' style={{ width: 'fit-content', display: 'inline-block' }}>
             <ConfirmationAlert open={openDialog} onNegative={onNegative} onPositive={onPositive} title={alertTitle} body={alertBody} />
-            <CardMedia component="img" image={`/assets/uploads/${image}`} style={{ maxWidth: 200 }} />
+            <CardMedia component="img" image={`/assets/uploads/${image}`} style={{ maxWidth: "100%" }} />
             <CardContent>
                 <Typography gutterBottom variant="h5" component="div">
                     {title}

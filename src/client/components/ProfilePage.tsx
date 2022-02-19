@@ -7,6 +7,7 @@ import Grid from '@mui/material/Grid';
 import Button from '@mui/material/Button';
 import Modal from '@mui/material/Modal';
 import Box from '@mui/material/Box';
+import Paper from '@mui/material/Paper';
 import TextField from '@mui/material/TextField';
 import PlusIcon from '@mui/icons-material/AddCircleOutlineOutlined'
 import Select, { SelectChangeEvent } from '@mui/material/Select';
@@ -14,6 +15,8 @@ import MenuItem from '@mui/material/MenuItem';
 import Posting from './Posting';
 import IPosting from '../../shared/IPosting';
 import ICurrency from '../../shared/ICurrency';
+import { useAppSelector } from '../app/hooks';
+import { selectUser } from '../reducers';
 import './css/Home.scss';
 
 function renderModal(
@@ -76,6 +79,7 @@ function renderModal(
 
     return (
       <Modal
+        style={{ overflow: 'scroll' }}
         open={creating}
         onClose={() => {
           handleModalClose();
@@ -104,9 +108,7 @@ function renderModal(
                 </Select>
               </Box>
               {image && (
-                <div>
-                  <img alt="not found" src={URL.createObjectURL(image)} />
-                </div>
+                <Box component="img" alt="not found" src={URL.createObjectURL(image)} width="100%" borderRadius="4%" />
               )}
               <Button variant="contained" component="label">
                 Upload Image
@@ -132,6 +134,7 @@ function renderModal(
 export const CreatePage: React.FC = () => {
   const [postings, setPostings] = React.useState<IPosting[]>([]);
   const [creating, setCreationDialog] = React.useState(false);
+  const user = useAppSelector(selectUser);
 
   type ButtonEventHandler = React.MouseEventHandler<HTMLButtonElement>;
 
@@ -210,16 +213,20 @@ export const CreatePage: React.FC = () => {
     <>
       <CssBaseline />
       {renderModal(creating, handleModalClose, modalStyle, createPosting)}
-      {postings.map(posting => (
-        <Posting key={posting.posting_id} {...posting} removePosting={removePosting} />
-      ))}
-      <Grid container justifyContent="center" spacing={2} marginTop={1}>
-        <Grid item>
-          <Button onClick={addPosting}>
-            <Typography align="center">
-              <PlusIcon className="add-button" />
-            </Typography>
-          </Button>
+      <Grid container marginTop={1}>
+        <Grid item justifyContent="center" xs={6}>
+          {postings.map(posting => (
+            <Posting {...posting} removePosting={removePosting} />
+          ))}
+        </Grid>
+        <Grid item xs={6}>
+          <Grid item xs={12} textAlign="center">
+            <Button onClick={addPosting}>
+              <Typography align="center">
+                <PlusIcon className="add-button" />
+              </Typography>
+            </Button>
+          </Grid>
         </Grid>
       </Grid>
     </>
