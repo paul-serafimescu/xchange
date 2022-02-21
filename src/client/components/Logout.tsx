@@ -3,10 +3,17 @@ import Container from '@mui/material/Container';
 import CssBaseline from '@mui/material/CssBaseline';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
+import { useAppDispatch } from '../app/hooks';
+import { logoutUser } from '../reducers';
 import { logout } from '../utils';
 
 export const Logout: React.FC = () => {
-  logout();
+  const dispatch = useAppDispatch();
+  
+  React.useEffect(() => {
+    dispatch(logoutUser());
+    logout();
+  }, []);
 
   return (
     <Container component="main">

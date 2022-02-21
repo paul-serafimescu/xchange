@@ -1,4 +1,4 @@
-import { createAsyncThunk, createSlice } from '@reduxjs/toolkit';
+import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { RootState } from '../app/store';
 import { HTTPRequestFactory } from '../../shared/utils';
 import { useToken } from '../utils';
@@ -69,7 +69,7 @@ export const userSlice = createSlice({
     name: 'user',
     initialState,
     reducers: {
-
+        logoutUser: (state, action: PayloadAction) => ({ ...state, status: AuthStatus.GUEST }),
     },
     extraReducers: builder => {
         builder.addCase(authenticate.fulfilled, (state, action) => {
@@ -109,7 +109,7 @@ export const userSlice = createSlice({
     }
 });
 
-export const { } = userSlice.actions;
+export const { logoutUser } = userSlice.actions;
 export const selectUser = (state: RootState) => state.user;
 
 export default userSlice.reducer;

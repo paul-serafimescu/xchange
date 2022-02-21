@@ -11,13 +11,14 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
 import { HTTPRequestFactory } from '../../shared/utils';
+import { APP_NAME } from '../../shared/config';
 
 function Copyright(props: any) {
   return (
     <Typography variant="body2" color="text.secondary" align="center" {...props}>
       {'Copyright © '}
       <Link color="inherit" href="">
-        Luna
+        {APP_NAME}
       </Link>{' '}
       {new Date().getFullYear()}
       {'.'}

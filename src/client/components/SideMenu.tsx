@@ -11,10 +11,16 @@ import HomeIcon from '@mui/icons-material/Home';
 import LoginIcon from '@mui/icons-material/Login';
 import LogoutIcon from '@mui/icons-material/Logout';
 import ProfileIcon from '@mui/icons-material/AccountCircle';
+import { useAppSelector } from '../app/hooks';
+import { AuthStatus, selectUser } from '../reducers';
 
 const drawerWidth = 240;
 
 export const SideMenu: React.FC = () => {
+  const user = useAppSelector(selectUser);
+
+  const authenticated = user.status === AuthStatus.AUTHENTICATED;
+
   return (
     <Drawer
       variant='permanent'
@@ -41,12 +47,12 @@ export const SideMenu: React.FC = () => {
           </ListItemIcon>
           <ListItemText primary='Sign in' />
         </ListItem>
-        <ListItem button component={Router.Link} to='/profile'>
+        {authenticated && <ListItem button component={Router.Link} to='/profile'>
           <ListItemIcon>
             <ProfileIcon />
           </ListItemIcon>
           <ListItemText primary='Your Profile' />
-        </ListItem>
+        </ListItem>}
         <ListItem button component={Router.Link} to='/logout'>
           <ListItemIcon>
             <LogoutIcon />

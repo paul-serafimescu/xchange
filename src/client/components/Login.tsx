@@ -12,15 +12,16 @@ import Box from '@mui/material/Box';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import Typography from '@mui/material/Typography';
 import Container from '@mui/material/Container';
-import { authenticate, selectUser } from '../reducers/userSlice';
+import { authenticate, selectUser, AuthStatus } from '../reducers';
 import { useAppSelector, useAppDispatch } from '../app/hooks';
+import { APP_NAME } from '../../shared/config';
 
 function Copyright(props: any) {
   return (
     <Typography variant="body2" color="text.secondary" align="center" {...props}>
       {'Copyright © '}
       <Link color="inherit" href="">
-        Luna
+        {APP_NAME}
       </Link>{' '}
       {new Date().getFullYear()}
       {'.'}
@@ -35,17 +36,33 @@ export default function SignIn() {
   const dispatch = useAppDispatch();
   const user = useAppSelector(selectUser);
 
+  React.useEffect(() => {
+    switch (user.status) {
+      case AuthStatus.AUTHENTICATED:
+        return navigate('/');
+      case AuthStatus.LOADING:
+      case AuthStatus.GUEST:
+        break;
+    }
+  }, [user]);
+
   const handleSubmit = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     
     const data = new FormData(event.currentTarget);
-    await dispatch(authenticate({
+    dispatch(authenticate({
       email: data.get('email').toString(),
       password: data.get('password').toString(),
       remember: remember
-    }));
-
-    return navigate('/');
+    })).then(() => {
+      switch (user.status) {
+        case AuthStatus.GUEST:
+          return setError('invalid credentials');
+        case AuthStatus.LOADING:
+        case AuthStatus.AUTHENTICATED:
+          break;
+      }
+    });
   };
 
   const rememberMe = (event: React.ChangeEvent<HTMLInputElement>, checked: boolean) => {
