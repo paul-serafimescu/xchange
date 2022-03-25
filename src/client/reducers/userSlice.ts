@@ -48,7 +48,7 @@ export const loadUser = createAsyncThunk(
 
 export const authenticate = createAsyncThunk(
     'user/authenticate',
-    async (credentials: { email: string, password: string, remember: boolean}) => {
+    async (credentials: { email: string, password: string, remember: boolean }) => {
         const factory = new HTTPRequestFactory();
 
         try {

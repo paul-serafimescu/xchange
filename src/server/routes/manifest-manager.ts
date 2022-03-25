@@ -13,7 +13,7 @@ function getManifestFromWebpack(): Promise<any> {
 
 let manifestStrCache: any;
 
-export async function getManifest() {
+export async function getManifest(): Promise<object> {
   let manifestStr: string;
   if (IS_DEV) {
     manifestStr = await getManifestFromWebpack();

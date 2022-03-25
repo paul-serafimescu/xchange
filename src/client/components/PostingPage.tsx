@@ -26,7 +26,9 @@ export const PostingPage: React.FC = () => {
         if (isNaN(postID)) {
             return setState(EControllerState.INVALID);
         } else if (!currentPost || currentPost.posting_id !== postID) {
-            dispatch(loadCurrentPostAPI(postID)).then(() => setState(EControllerState.VALID)).catch(err => console.error(err));
+            dispatch(loadCurrentPostAPI(postID))
+                .then(() => setState(EControllerState.VALID))
+                .catch(err => console.error(err));
         } else {
             setState(EControllerState.VALID);
         }
@@ -106,10 +108,13 @@ export const PostingPage: React.FC = () => {
                                     <Typography gutterBottom variant='h6' fontWeight='400'>
                                         {currentPost.description}
                                     </Typography>
+                                    <Typography fontWeight='300' gutterBottom>
+                                        {currentPost.author.firstName} {currentPost.author.lastName}
+                                    </Typography>
                                 </Paper>
                             </Grid>
-                            </Grid>
-                        </Paper>
+                        </Grid>
+                    </Paper>
                 );
             case EControllerState.LOADING:
                 return (

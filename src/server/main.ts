@@ -4,8 +4,8 @@ import { apiRouter } from './routes/api-router';
 import { pagesRouter } from './routes/pages-router';
 import { staticsRouter } from './routes/statics-router';
 import * as config from './config';
-import {
-  Posting, User, db
+import db, {
+  Posting, User
 } from './models';
 
 console.log(`*******************************************`);

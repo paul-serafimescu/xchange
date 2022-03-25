@@ -4,4 +4,4 @@ export * from './User';
 export * from './Posting';
 export * from './Currency';
 
-export { db };
+export default db;
